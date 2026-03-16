@@ -1,123 +1,194 @@
 # ISM - Internet Speed Monitor
 
-A lightweight, Windows 11-compatible internet speed monitor that displays real-time download and upload speeds in a compact taskbar-style window.
+A lightweight, Windows 11-compatible internet speed monitor that displays real-time download and upload speeds in a compact taskbar-style window. Similar to TrafficMonitor but focused specifically on network speed monitoring.
 
-## Download
+---
 
-### Latest Release
-- **[ISM_v1.0.exe (~63 MB)](releases/ISM/InternetSpeedMonitor.exe)** - Self-contained executable (no .NET runtime required)
+## 📥 Download
 
-> Simply download and run! Works on Windows 10/11.
+### Latest Release (v1.0.0)
+| Version | Size | Requirements |
+|---------|------|--------------|
+| [ISM_v1.0.0.exe](releases/InternetSpeedMonitor.exe) | ~63 MB | None (self-contained) |
 
-## Features
+**Direct Download:** Click the link above or go to `releases/` folder and download `InternetSpeedMonitor.exe`
+
+---
+
+## ✨ Features
 
 - 📊 **Real-time Speed Monitoring** - Displays current download and upload speeds
-- 🎨 **Modern Dark Theme** - Sleek, professional appearance
-- 🔧 **Customizable Settings** - Adjust transparency, size, refresh rate, and more
-- 📌 **Always on Top** - Keep the speed monitor visible
+- 🎨 **Modern Dark Theme** - Sleek, professional appearance  
+- 🔧 **Fully Customizable** - Adjust transparency, size, refresh rate, colors, and more
+- 📌 **Always on Top** - Keep the speed monitor visible above all windows
 - 🔒 **Lock Position** - Prevent accidental repositioning
 - 🚀 **Start with Windows** - Auto-start when you log in
 - 💾 **System Tray** - Minimize to tray for minimal resource usage
+- 🎯 **Compact Design** - Small footprint, taskbar-friendly
 
-## Requirements
+---
 
-- Windows 10/11
-- No additional requirements (self-contained build)
+## 🖥️ System Requirements
 
-## Installation
+- **Operating System:** Windows 10 or Windows 11
+- **Runtime:** None required (self-contained build)
+- **Disk Space:** ~70 MB
 
-### Option 1: Download Release (Recommended)
-Simply download `ISM_v1.0.exe` from the [releases folder](releases/ISM/) and run it.
+---
 
-### Option 2: Build from Source
-Requires .NET 8.0 SDK:
+## 🚀 Quick Start
 
-```bash
-# Framework-dependent (~1.8 MB, requires .NET 8)
-dotnet publish -c Release -r win-x64 --self-contained false -o ./publish
+1. **Download** the `InternetSpeedMonitor.exe` from the [releases folder](releases/)
+2. **Run** the application (double-click)
+3. **Done!** The speed monitor will appear on your screen
 
-# Self-contained (~63 MB, no runtime needed)
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./releases/ISM
-```
+---
 
-## Usage
+## 📖 User Guide
 
-1. **Run the application** - Double-click `InternetSpeedMonitor.exe`
-2. **Right-click** on the speed monitor to access the context menu:
-   - Settings - Customize appearance and behavior
-   - Show/Hide - Toggle visibility
-   - Exit - Close the application
-3. **Drag** the window to reposition (if not locked)
-4. **Resize** using the edges (if not locked)
+### Context Menu (Right-Click)
+Right-click on the speed monitor to access:
+- **Settings** - Customize appearance and behavior
+- **Show** - Display the window
+- **Hide** - Hide the window to tray
+- **Exit** - Close the application
 
-## Settings
+### Moving the Window
+- **Drag** the window to reposition it
+- If **Lock Position** is enabled in settings, dragging is disabled
 
-| Setting | Description |
-|---------|-------------|
-| Always on Top | Keep window above all other windows |
-| Lock Window Position | Prevent moving/resizing |
-| Start Minimized | Start in system tray |
-| Start with Windows | Auto-start when Windows boots |
-| Hide to Tray on Close | Minimize to tray instead of exiting |
-| Transparency | Window opacity (10%-100%) |
-| Background Opacity | Background transparency |
-| Corner Radius | Window corner roundness |
-| Unit | Mbps (bits) or MB/s (bytes) |
-| Refresh Rate | Update frequency (0.5s - 5s) |
+### Customizing
+Open **Settings** to customize:
+- Transparency and opacity
+- Window size
+- Refresh rate
+- Display units (Mbps/MB/s)
+- Theme (Dark/Light/System)
+- Corner radius
 
-## Building from Source
+---
+
+## ⚙️ Settings Details
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| Always on Top | Keep window above all other windows | Enabled |
+| Lock Window Position | Prevent moving/resizing | Enabled |
+| Start Minimized | Start in system tray | Disabled |
+| Start with Windows | Auto-start when Windows boots | Disabled |
+| Hide to Tray on Close | Minimize to tray instead of exiting | Enabled |
+| Transparency | Window opacity (10%-100%) | 100% |
+| Background Opacity | Background transparency | 100% |
+| Corner Radius | Window corner roundness | 8px |
+| Unit | Display format: Mbps (bits) or MB/s (bytes) | Mbps |
+| Refresh Rate | Update frequency | 1 second |
+
+---
+
+## 🔨 Build from Source
 
 ### Prerequisites
 - .NET 8.0 SDK
-- Visual Studio 2022 or VS Code
+- Windows 10/11
+- Visual Studio 2022 or VS Code (optional)
 
 ### Build Commands
 
 ```bash
+# Clone the repository
+git clone https://github.com/MeTariqul/ISM-Internet-speed-Monitor.git
+cd ISM-Internet-speed-Monitor
+
 # Restore dependencies
 dotnet restore
 
-# Build Debug
+# Build Debug version
 dotnet build
 
-# Build Release
+# Build Release version
 dotnet build -c Release
+```
 
-# Publish (Framework-dependent, ~1.8 MB)
+### Publishing
+
+#### Option 1: Self-Contained (Recommended for distribution)
+```bash
+# Creates single .exe with all dependencies (~63 MB)
+dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./releases
+```
+
+#### Option 2: Framework-Dependent (Smaller size)
+```bash
+# Creates small .exe but requires .NET 8 runtime (~1.8 MB)
 dotnet publish -c Release -r win-x64 --self-contained false -o ./publish
-
-# Publish (Self-contained, ~63 MB)
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./releases/ISM
 ```
 
-## File Structure
+---
+
+## 📁 Project Structure
 
 ```
-InternetSpeedMonitor/
-├── App.xaml                 # Application entry
-├── App.xaml.cs              # Application code
-├── MainWindow.xaml          # Main speed monitor UI
-├── MainWindow.xaml.cs       # Main window logic
-├── SettingsWindow.xaml      # Settings dialog UI
-├── SettingsWindow.xaml.cs  # Settings logic
-├── Services/
-│   └── Settings.cs          # Settings management
-├── AssemblyInfo.cs          # Assembly metadata
-├── InternetSpeedMonitor.csproj # Project file
-└── ISM.ico                  # Application icon
+ISM-Internet-speed-Monitor/
+├── releases/                    # Pre-built executables
+│   └── InternetSpeedMonitor.exe
+├── InternetSpeedMonitor/         # Source code
+│   ├── App.xaml                  # Application entry
+│   ├── App.xaml.cs               # Application code
+│   ├── MainWindow.xaml           # Main UI
+│   ├── MainWindow.xaml.cs        # Main window logic
+│   ├── SettingsWindow.xaml       # Settings dialog
+│   ├── SettingsWindow.xaml.cs    # Settings logic
+│   ├── Services/
+│   │   ├── NetworkSpeedService.cs # Network monitoring
+│   │   └── Settings.cs            # Settings management
+│   ├── ISM.ico                   # Application icon
+│   └── InternetSpeedMonitor.csproj
+├── Internet speed monitor.sln    # Solution file
+├── .gitignore                    # Git ignore rules
+└── README.md                     # This file
 ```
 
-## Configuration
+---
+
+## 📝 Configuration
 
 Settings are stored in:
 ```
 %APPDATA%\InternetSpeedMonitor\settings.json
 ```
 
-## License
+You can manually edit this file to change settings, but it's recommended to use the Settings dialog within the application.
 
-MIT License
+---
 
-## Contributing
+## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to:
+- Submit bug reports
+- Request new features
+- Create pull requests
+
+---
+
+## 📄 License
+
+MIT License - See LICENSE file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+Inspired by [TrafficMonitor](https://github.com/zhongyang219/TrafficMonitor) - A similar system monitoring application.
+
+---
+
+## 📞 Support
+
+If you encounter any issues or have questions:
+1. Check the Issues page
+2. Create a new issue with details
+
+---
+
+**Version:** 1.0.0  
+**Last Updated:** 2026-03-16
