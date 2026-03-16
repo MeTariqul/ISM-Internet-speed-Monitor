@@ -4,15 +4,13 @@ obj/
 publish/
 publish-installer/
 publish-small/
+releases/
 
 # User-specific files
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
-*.exe
-*.dll
-*.pdb
 
 # Visual Studio files
 .vs/
@@ -34,5 +32,10 @@ project.lock.json
 .DS_Store
 Thumbs.db
 
-# ISM specific
-ISM.ico
+# Build artifacts
+*.exe
+*.dll
+*.pdb
+
+# Icon (keep this one)
+!InternetSpeedMonitor/ISM.ico

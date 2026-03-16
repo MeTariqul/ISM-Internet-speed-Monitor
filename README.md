@@ -2,6 +2,13 @@
 
 A lightweight, Windows 11-compatible internet speed monitor that displays real-time download and upload speeds in a compact taskbar-style window.
 
+## Download
+
+### Latest Release
+- **[ISM_v1.0.exe (~63 MB)](releases/ISM/InternetSpeedMonitor.exe)** - Self-contained executable (no .NET runtime required)
+
+> Simply download and run! Works on Windows 10/11.
+
 ## Features
 
 - 📊 **Real-time Speed Monitoring** - Displays current download and upload speeds
@@ -15,16 +22,23 @@ A lightweight, Windows 11-compatible internet speed monitor that displays real-t
 ## Requirements
 
 - Windows 10/11
-- .NET 8.0 Runtime (for framework-dependent version)
-- OR use the self-contained version (no runtime required)
+- No additional requirements (self-contained build)
 
 ## Installation
 
-### Option 1: Framework-Dependent (Smaller, ~1.8 MB)
-Requires .NET 8.0 Runtime installed on your system.
+### Option 1: Download Release (Recommended)
+Simply download `ISM_v1.0.exe` from the [releases folder](releases/ISM/) and run it.
 
-### Option 2: Self-Contained (Larger, ~66 MB)
-No .NET runtime required. Just run the .exe directly.
+### Option 2: Build from Source
+Requires .NET 8.0 SDK:
+
+```bash
+# Framework-dependent (~1.8 MB, requires .NET 8)
+dotnet publish -c Release -r win-x64 --self-contained false -o ./publish
+
+# Self-contained (~63 MB, no runtime needed)
+dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./releases/ISM
+```
 
 ## Usage
 
@@ -72,8 +86,8 @@ dotnet build -c Release
 # Publish (Framework-dependent, ~1.8 MB)
 dotnet publish -c Release -r win-x64 --self-contained false -o ./publish
 
-# Publish (Self-contained, ~66 MB)
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
+# Publish (Self-contained, ~63 MB)
+dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./releases/ISM
 ```
 
 ## File Structure
@@ -85,12 +99,12 @@ InternetSpeedMonitor/
 ├── MainWindow.xaml          # Main speed monitor UI
 ├── MainWindow.xaml.cs       # Main window logic
 ├── SettingsWindow.xaml      # Settings dialog UI
-├── SettingsWindow.xaml.cs   # Settings logic
+├── SettingsWindow.xaml.cs  # Settings logic
 ├── Services/
 │   └── Settings.cs          # Settings management
-├── AssemblyInfo.cs           # Assembly metadata
+├── AssemblyInfo.cs          # Assembly metadata
 ├── InternetSpeedMonitor.csproj # Project file
-└── ISM.ico                   # Application icon
+└── ISM.ico                  # Application icon
 ```
 
 ## Configuration
