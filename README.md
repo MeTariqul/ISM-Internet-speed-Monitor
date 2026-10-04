@@ -109,6 +109,9 @@ Metrics/SpeedFormat.cs         unit formatting (Auto / KB / Mbps)
 Metrics/Sample.cs              one reading
 ```
 
+The earlier v1.0 implementation (window + settings dialog) is preserved in
+`legacy/` together with its solution and old release binary.
+
 ## Troubleshooting
 
 - **"You must install .NET"** – the app is framework-dependent; install the
