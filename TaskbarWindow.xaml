@@ -1,0 +1,31 @@
+<Window x:Class="SpeedMonitor.TaskbarWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Speed Monitor"
+        Height="48"
+        SizeToContent="Width"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        ShowActivated="False"
+        ResizeMode="NoResize"
+        Topmost="True"
+        Focusable="False"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        MouseLeftButtonUp="Overlay_MouseLeftButtonUp"
+        MouseRightButtonUp="Overlay_MouseRightButtonUp">
+
+    <!-- Alpha 1 background: invisible to the eye, but stops Windows from treating the
+         transparent pixels as click-through so the overlay can open its menu. -->
+    <Border Padding="10,0" Background="#01000000">
+        <TextBlock x:Name="ValueText"
+                   Text="{Binding TaskbarText}"
+                   FontSize="12.5"
+                   FontWeight="SemiBold"
+                   VerticalAlignment="Center"
+                   Foreground="#FFF2F5F7" />
+    </Border>
+
+</Window>

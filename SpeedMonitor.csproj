@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SpeedMonitor</RootNamespace>
+    <AssemblyName>ISM-Internet-Speed-Monitor</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyTitle>ISM - Internet Speed Monitor</AssemblyTitle>
+    <Product>ISM - Internet Speed Monitor</Product>
+    <Version>1.0.0</Version>
+    <Authors>MeTariqul</Authors>
+    <Company>MeTariqul</Company>
+    <Copyright>Copyright (c) MeTariqul - github.com/MeTariqul</Copyright>
+    <Description>Internet Speed Monitor (ISM): a DU Meter style network / disk / CPU / RAM readout drawn inside the Windows taskbar.</Description>
+    <RepositoryUrl>https://github.com/MeTariqul/ISM-Internet-speed-Monitor</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/MeTariqul/ISM-Internet-speed-Monitor</PackageProjectUrl>
+    <!-- WFAC010: DPI is configured in app.manifest (which is what WPF reads), not via the WinForms API. -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+  </PropertyGroup>
+
+  <!-- Avoid System.Drawing / System.Windows.Forms leaking into WPF code via implicit usings. -->
+  <ItemGroup>
+    <Using Remove="System.Drawing" />
+    <Using Remove="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
+  </ItemGroup>
+
+</Project>
