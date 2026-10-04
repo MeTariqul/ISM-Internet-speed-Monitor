@@ -14,11 +14,12 @@ Written with **WPF on .NET 8** — no admin rights, no driver, no installer.
 
 ## Download
 
-Grab the single **`ISM-Internet-Speed-Monitor.exe`** from the
-[Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
-page and double-click it — nothing else to install. The runtime is baked in
-(self-contained, single file), so it works on any 64-bit Windows 10/11 without
-the .NET runtime.
+**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.1.1/ISM-Internet-Speed-Monitor.exe)** (68 MB, single file)
+
+Or grab it from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
+page, then double-click it — nothing else to install. The .NET runtime and every
+dependency are baked in (self-contained, single file), so it works on any 64-bit
+Windows 10/11 without the .NET runtime.
 
 ## What it shows
 

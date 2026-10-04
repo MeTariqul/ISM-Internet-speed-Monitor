@@ -29,6 +29,15 @@
     <Using Remove="System.Windows.Forms" />
   </ItemGroup>
 
+  <!-- legacy/ holds the old v1.0 implementation with its own project - never compile it into this app. -->
+  <ItemGroup>
+    <Compile Remove="legacy/**" />
+    <Page Remove="legacy/**" />
+    <ApplicationDefinition Remove="legacy/**" />
+    <EmbeddedResource Remove="legacy/**" />
+    <None Remove="legacy/**" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
   </ItemGroup>
