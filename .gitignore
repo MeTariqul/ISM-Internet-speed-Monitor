@@ -1,5 +1,41 @@
+# Build outputs
 bin/
 obj/
 publish/
+publish-installer/
+publish-small/
+releases/
+
+# User-specific files
 *.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio files
 .vs/
+*.rsuser
+*.unsuccessfulbuild
+*.log
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.exe
+*.dll
+*.pdb
+
+# Icon (keep this one)
+!InternetSpeedMonitor/ISM.ico
