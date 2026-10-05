@@ -25,6 +25,7 @@ public sealed class TaskbarMenu : IDisposable
     private readonly WinForms.ToolStripMenuItem _formatBoth;
     private readonly WinForms.ToolStripMenuItem[] _unitItems;
     private readonly WinForms.ToolStripMenuItem _adapters;
+    private readonly WinForms.ToolStripMenuItem _installItem;
 
     public TaskbarMenu(
         AppSettings settings,
@@ -69,6 +70,7 @@ public sealed class TaskbarMenu : IDisposable
         units.DropDownItems.AddRange(_unitItems);
 
         _adapters = new WinForms.ToolStripMenuItem("Network adapter");
+        _installItem = MakeItem("Install ISM...", Install_Click, checkable: false);
 
         _menu.Items.Add(_showText);
         _menu.Items.Add(_autostart);
@@ -79,6 +81,7 @@ public sealed class TaskbarMenu : IDisposable
         _menu.Items.Add(units);
         _menu.Items.Add(_adapters);
         _menu.Items.Add(new WinForms.ToolStripSeparator());
+        _menu.Items.Add(_installItem);
         _menu.Items.Add(MakeItem("About / Credits", About_Click, checkable: false));
         _menu.Items.Add(MakeItem("Exit", (_, _) => _exit(), checkable: false));
 
@@ -111,6 +114,8 @@ public sealed class TaskbarMenu : IDisposable
         {
             item.Checked = string.Equals(item.Tag as string, _settings.Units, StringComparison.OrdinalIgnoreCase);
         }
+
+        _installItem.Text = SelfInstall.IsInstalled ? "Uninstall ISM..." : "Install ISM...";
 
         RebuildAdapters();
     }
@@ -205,6 +210,83 @@ public sealed class TaskbarMenu : IDisposable
 
     /// <summary>Write settings to disk right away so a force-kill can never lose a change.</summary>
     private void SaveNow() => _settings.Save();
+
+    private void Install_Click(object? sender, EventArgs e)
+    {
+        if (SelfInstall.IsInstalled)
+        {
+            ConfirmUninstall();
+            return;
+        }
+
+        System.Windows.MessageBoxResult answer = System.Windows.MessageBox.Show(
+            "Install ISM for your Windows account?\n\n"
+            + $"  - Copy to\n    {SelfInstall.InstallDir}\n"
+            + "  - Start Menu shortcut\n"
+            + "  - Uninstall entry in Settings > Apps\n\n"
+            + "No admin rights needed. Your settings stay where they are and you can\n"
+            + "uninstall at any time from this menu or from Settings > Apps.",
+            "Install - ISM Internet Speed Monitor",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Question);
+
+        if (answer != System.Windows.MessageBoxResult.Yes) return;
+
+        var (ok, message) = SelfInstall.Install();
+        System.Windows.MessageBox.Show(
+            ok
+                ? $"Installed.\n\n{message}\n\n"
+                  + "From now on, start it from the Start Menu; uninstall from this menu\n"
+                  + "or from Settings > Apps."
+                : "Install failed:\n\n" + message,
+            "Install - ISM Internet Speed Monitor",
+            System.Windows.MessageBoxButton.OK,
+            ok ? System.Windows.MessageBoxImage.Information : System.Windows.MessageBoxImage.Error);
+    }
+
+    private void ConfirmUninstall()
+    {
+        bool runningFromInstall = SelfInstall.IsRunningFromInstall;
+
+        System.Windows.MessageBoxResult answer = System.Windows.MessageBox.Show(
+            "Uninstall ISM?\n\n"
+            + "  - Start Menu shortcut\n"
+            + "  - Settings > Apps entry\n"
+            + "  - installed copy\n"
+            + "  - your settings file\n"
+            + (runningFromInstall
+                ? "\nThe copy you are running IS the installed one - ISM will close.\n"
+                : "\nThe portable copy you are running is not touched.\n"),
+            "Uninstall - ISM Internet Speed Monitor",
+            System.Windows.MessageBoxButton.YesNo,
+            System.Windows.MessageBoxImage.Warning);
+
+        if (answer != System.Windows.MessageBoxResult.Yes) return;
+
+        var (ok, message) = SelfInstall.Uninstall(deleteSettings: true);
+        if (!ok)
+        {
+            System.Windows.MessageBox.Show(
+                "Uninstall failed:\n\n" + message,
+                "Uninstall - ISM Internet Speed Monitor",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
+            return;
+        }
+
+        if (runningFromInstall)
+        {
+            _exit(); // the scheduled cmd helper removes the exe once this process is gone
+        }
+        else
+        {
+            System.Windows.MessageBox.Show(
+                "Uninstalled - shortcut, Apps entry and installed copy removed.",
+                "Uninstall - ISM Internet Speed Monitor",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Information);
+        }
+    }
 
     private void About_Click(object? sender, EventArgs e)
     {

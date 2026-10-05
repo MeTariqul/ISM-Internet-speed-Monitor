@@ -26,6 +26,14 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
+        // Install/uninstall must run before the single-instance logic: the "Settings → Apps"
+        // uninstaller and `exe /install` may start while another copy is already running.
+        if (HandleCommandLine(e.Args))
+        {
+            Shutdown();
+            return;
+        }
+
         _instanceMutex = new Mutex(true, MutexName, out bool firstInstance);
         _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, SignalName, out _);
 
@@ -82,6 +90,71 @@ public partial class App : System.Windows.Application
     {
         _menu?.ShowAt(System.Windows.Forms.Cursor.Position);
     }
+
+    /// <summary>Handles /install, /uninstall and /help. Returns true when the args were a command.</summary>
+    private bool HandleCommandLine(string[] args)
+    {
+        bool quiet = HasFlag(args, "/quiet", "-quiet", "--quiet", "/S", "-s");
+
+        if (HasFlag(args, "/install", "-install", "--install"))
+        {
+            var (ok, message) = SelfInstall.Install();
+            if (!quiet)
+            {
+                MessageBox.Show(
+                    ok
+                        ? $"Installed.\n\n{message}\n\n"
+                          + "\u2022 Start Menu shortcut created\n"
+                          + "\u2022 Uninstall entry added (Settings > Apps)\n\n"
+                          + "Start it from the Start Menu from now on; uninstall any time from\n"
+                          + "the tray menu or from Settings > Apps."
+                        : "Install failed:\n\n" + message,
+                    "ISM - Internet Speed Monitor",
+                    MessageBoxButton.OK,
+                    ok ? MessageBoxImage.Information : MessageBoxImage.Error);
+            }
+            return true;
+        }
+
+        if (HasFlag(args, "/uninstall", "-uninstall", "--uninstall"))
+        {
+            var (ok, message) = SelfInstall.Uninstall(deleteSettings: true);
+            if (!quiet)
+            {
+                MessageBox.Show(
+                    ok
+                        ? "Uninstalled - removed:\n\n"
+                          + "\u2022 Start Menu shortcut\n"
+                          + "\u2022 Settings > Apps entry\n"
+                          + "\u2022 the installed copy\n"
+                          + "\u2022 your settings\n"
+                        : "Uninstall failed:\n\n" + message,
+                    "ISM - Internet Speed Monitor",
+                    MessageBoxButton.OK,
+                    ok ? MessageBoxImage.Information : MessageBoxImage.Error);
+            }
+            return true;
+        }
+
+        if (HasFlag(args, "/?", "-?", "/help", "-h", "--help"))
+        {
+            MessageBox.Show(
+                "ISM - Internet Speed Monitor\n\n"
+                + "  (no arguments)   run the monitor\n"
+                + "  /install         install for this user (Start Menu + Apps entry)\n"
+                + "  /uninstall       remove the installation and its settings\n"
+                + "  /quiet           no dialogs (silent install / uninstall)\n",
+                "ISM - Internet Speed Monitor",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool HasFlag(string[] args, params string[] names) =>
+        args.Any(a => names.Contains(a, StringComparer.OrdinalIgnoreCase));
 
     public void ExitApp()
     {

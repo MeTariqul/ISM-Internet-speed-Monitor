@@ -29,10 +29,14 @@ public sealed class AppSettings
         _ => UnitMode.Auto,
     };
 
-    private static string FilePath => Path.Combine(
+    /// <summary>Where the settings live; internal so <see cref="SelfInstall"/> can remove it on uninstall.</summary>
+    internal static string FilePath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "SpeedMonitor",
         "settings.json");
+
+    /// <summary>Set while uninstalling so the final exit cannot resurrect the deleted settings file.</summary>
+    internal static bool SuppressSave { get; set; }
 
     public static AppSettings Load()
     {
@@ -51,6 +55,7 @@ public sealed class AppSettings
 
     public void Save()
     {
+        if (SuppressSave) return;
         try
         {
             string? dir = Path.GetDirectoryName(FilePath);
@@ -84,7 +89,8 @@ public sealed class AppSettings
 
             if (enabled)
             {
-                string? path = Environment.ProcessPath;
+                // Prefer the installed copy so uninstalling/keeping the download around cannot break autostart.
+                string? path = SelfInstall.TargetPath;
                 if (path is not null) key.SetValue(AutostartValueName, $"\"{path}\"");
             }
             else

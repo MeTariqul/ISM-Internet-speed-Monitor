@@ -10,7 +10,9 @@ speeds **inside the Windows taskbar**, just to the left of the notification area
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-Written with **WPF on .NET 8** — no admin rights, no driver, no installer.
+Written with **WPF on .NET 8** — no admin rights, no driver, no installer. Just
+double-click it, or install it properly in one click from the menu (see
+*Install & uninstall* below).
 
 ## Download
 
@@ -50,6 +52,7 @@ With *Also show CPU / RAM* enabled, `CPU 12%  RAM 68%` is appended.
   - **network adapter** selection (Auto = physical NICs only, or one specific
     adapter — handy for VPN traffic)
   - *Start with Windows* (HKCU `Run` key)
+  - *Install ISM…* / *Uninstall ISM…* (optional, per-user — see below)
   - exit
 - **Tray icon** – live speeds in the tooltip; left/right click opens the same
   menu.
@@ -60,6 +63,23 @@ With *Also show CPU / RAM* enabled, `CPU 12%  RAM 68%` is appended.
 - **Single instance** – launching the exe again makes the running copy open its
   menu at the cursor.
 - Per-monitor DPI aware (manifest `PerMonitorV2`).
+
+## Install & uninstall (optional)
+
+Double-clicking the exe runs it **portable** — nothing is written outside
+`%AppData%`. If you'd rather have it behave like a regular program:
+
+- **Install** – menu → *Install ISM…*, or run
+  `ISM-Internet-Speed-Monitor.exe /install`. This copies the exe to
+  `%LocalAppData%\Programs\ISM Internet Speed Monitor`, adds a Start Menu
+  shortcut and registers **Settings → Apps → ISM - Internet Speed Monitor**.
+  It is a per-user install, so no admin prompt ever appears.
+- **Uninstall** – menu → *Uninstall ISM…*, Windows
+  *Settings → Apps → Uninstall*, or `ISM-Internet-Speed-Monitor.exe
+  /uninstall`. Removes the shortcut, the Apps entry, the installed copy and
+  your settings.
+
+Both switches accept `/quiet` for a silent, dialog-free run.
 
 ## Data sources
 
@@ -105,6 +125,7 @@ Services/TaskbarMenu.cs        the shared settings menu (WinForms, hosts in tray
 Services/TaskbarLocator.cs     finds the taskbar + notification area rectangles
 Services/TrayIconService.cs    notification-area icon + tooltip
 Services/AppSettings.cs        JSON settings + autostart registry
+Services/SelfInstall.cs        optional install / uninstall (shortcut + Apps entry)
 Services/NativeMethods.cs      Win32 interop (SetWindowPos, styles, enumeration)
 ViewModels/MonitorViewModel.cs formats the readout texts for the bindings
 Metrics/MetricsSampler.cs      1 Hz sampling loop over performance counters
