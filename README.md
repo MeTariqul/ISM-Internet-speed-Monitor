@@ -14,7 +14,7 @@ Written with **WPF on .NET 8** — no admin rights, no driver, no installer.
 
 ## Download
 
-**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.1.2/ISM-Internet-Speed-Monitor.exe)** (68 MB, single file)
+**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.1.3/ISM-Internet-Speed-Monitor.exe)** (68 MB, single file)
 
 Or grab it from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
 page, then double-click it — nothing else to install. The .NET runtime and every
