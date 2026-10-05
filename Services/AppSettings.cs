@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using SpeedMonitor.Metrics;
 
 namespace SpeedMonitor.Services;
@@ -19,6 +20,8 @@ public sealed class AppSettings
 
     private const string AutostartValueName = "SpeedMonitor";
 
+    /// <summary>Derived from <see cref="Units"/> - never persisted, never read from disk.</summary>
+    [JsonIgnore]
     public UnitMode UnitMode => Units switch
     {
         "KB" => UnitMode.KiloBytes,

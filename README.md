@@ -54,7 +54,9 @@ With *Also show CPU / RAM* enabled, `CPU 12%  RAM 68%` is appended.
 - **Tray icon** – live speeds in the tooltip; left/right click opens the same
   menu.
 - **Settings persistence** – units, format, adapter, visibility and autostart
-  are stored in `%AppData%\SpeedMonitor\settings.json` on exit.
+  are written to `%AppData%\SpeedMonitor\settings.json` **immediately, on every
+  menu change** (plus once more on exit), so nothing is lost even if the app is
+  force-killed.
 - **Single instance** – launching the exe again makes the running copy open its
   menu at the cursor.
 - Per-monitor DPI aware (manifest `PerMonitorV2`).

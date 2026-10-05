@@ -147,18 +147,21 @@ public sealed class TaskbarMenu : IDisposable
     {
         _settings.ShowTaskbarText = _showText.Checked;
         _applyTextVisibility(_settings.ShowTaskbarText);
+        SaveNow();
     }
 
     private void Autostart_Click(object? sender, EventArgs e)
     {
         AppSettings.ApplyAutostart(_autostart.Checked);
         _settings.StartWithWindows = _autostart.Checked;
+        SaveNow();
     }
 
     private void ShowSystem_Click(object? sender, EventArgs e)
     {
         _settings.ShowSystem = _showSystem.Checked;
         _viewModel.Refresh();
+        SaveNow();
     }
 
     private void FormatNetwork_Click(object? sender, EventArgs e) => SetFormat("Network");
@@ -172,6 +175,7 @@ public sealed class TaskbarMenu : IDisposable
         _settings.TaskbarFormat = format;
         Sync();
         _viewModel.Refresh();
+        SaveNow();
     }
 
     private void Unit_Click(object? sender, EventArgs e)
@@ -185,6 +189,7 @@ public sealed class TaskbarMenu : IDisposable
             _ => UnitMode.Auto,
         };
         Sync();
+        SaveNow();
     }
 
     private void Adapter_Click(object? sender, EventArgs e)
@@ -195,7 +200,11 @@ public sealed class TaskbarMenu : IDisposable
         _settings.Adapter = adapter;
         _setAdapter(adapter);
         Sync();
+        SaveNow();
     }
+
+    /// <summary>Write settings to disk right away so a force-kill can never lose a change.</summary>
+    private void SaveNow() => _settings.Save();
 
     private void About_Click(object? sender, EventArgs e)
     {
