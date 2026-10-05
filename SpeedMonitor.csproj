@@ -12,7 +12,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyTitle>ISM - Internet Speed Monitor</AssemblyTitle>
     <Product>ISM - Internet Speed Monitor</Product>
-    <Version>1.0.0</Version>
+    <Version>1.2.0</Version>
     <Authors>MeTariqul</Authors>
     <Company>MeTariqul</Company>
     <Copyright>Copyright (c) MeTariqul - github.com/MeTariqul</Copyright>

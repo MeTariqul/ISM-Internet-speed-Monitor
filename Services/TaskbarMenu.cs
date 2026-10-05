@@ -290,8 +290,9 @@ public sealed class TaskbarMenu : IDisposable
 
     private void About_Click(object? sender, EventArgs e)
     {
+        string version = (typeof(TaskbarMenu).Assembly.GetName().Version ?? new Version(1, 0, 0)).ToString(3);
         System.Windows.MessageBox.Show(
-            "ISM - Internet Speed Monitor (Speed Monitor) 1.0.0\r\n\r\n"
+            "ISM - Internet Speed Monitor (Speed Monitor) " + version + "\r\n\r\n"
             + "A DU Meter style monitor: live upload/download, disk read/write,\r\n"
             + "CPU and RAM readout drawn inside the Windows taskbar.\r\n\r\n"
             + "Created by: MeTariqul\r\n"
