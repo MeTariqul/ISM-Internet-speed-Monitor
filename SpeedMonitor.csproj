@@ -29,16 +29,21 @@
     <Using Remove="System.Windows.Forms" />
   </ItemGroup>
 
-  <!-- legacy/ holds the old v1.0 implementation with its own project - never compile it into this app. -->
+  <!--
+    legacy/ holds the old v1.0 implementation (frozen, own solution).
+    tests/ holds the xUnit project. Neither may be compiled into the app.
+  -->
   <ItemGroup>
-    <Compile Remove="legacy/**" />
-    <Page Remove="legacy/**" />
-    <ApplicationDefinition Remove="legacy/**" />
-    <EmbeddedResource Remove="legacy/**" />
-    <None Remove="legacy/**" />
+    <Compile Remove="legacy/**;tests/**" />
+    <Page Remove="legacy/**;tests/**" />
+    <ApplicationDefinition Remove="legacy/**;tests/**" />
+    <EmbeddedResource Remove="legacy/**;tests/**" />
+    <None Remove="legacy/**;tests/**" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
     <!-- Ed25519 verification for offline license tokens (.NET 8 has no built-in Ed25519 API). -->
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
