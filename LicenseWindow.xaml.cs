@@ -90,13 +90,15 @@ public partial class LicenseWindow : Window
     {
         if (_busy) return;
 
-        SetBusy(true, "Requesting a key...");
+        SetBusy(true);
+        SetStatus(string.Empty, error: false);
+        SetRequestStatus("Requesting a key...", error: false);
         try
         {
             KeyRequestResult request = await _license.RequestKeyAsync(EmailBox.Text);
             if (!request.Ok)
             {
-                if (!_closed) SetStatus(request.Error ?? "Could not request a key.", error: true);
+                if (!_closed) SetRequestStatus(request.Error ?? "Could not request a key.", error: true);
                 return;
             }
 
@@ -104,7 +106,7 @@ public partial class LicenseWindow : Window
             {
                 if (!_closed)
                 {
-                    SetStatus("Check your inbox - your key is on its way. Paste it above when it arrives.",
+                    SetRequestStatus("Check your inbox - your key is on its way. Paste it above when it arrives.",
                         error: false);
                 }
                 return;
@@ -113,7 +115,7 @@ public partial class LicenseWindow : Window
             // Auto mode hands the key back immediately; activate it without another click.
             if (_closed) return;
             KeyBox.Text = request.Key;
-            SetStatus("Key received. Activating...", error: false);
+            SetRequestStatus("Key received. Activating...", error: false);
 
             if (await ActivateAsync(request.Key) && !_closed)
             {
@@ -142,6 +144,14 @@ public partial class LicenseWindow : Window
     private void KeyBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
         if (_statusIsError) SetStatus(string.Empty, error: false);
+    }
+
+    /// <summary>Key-request feedback lives next to the email box, not under the key field.</summary>
+    private void SetRequestStatus(string text, bool error)
+    {
+        RequestStatusText.Text = text;
+        RequestStatusText.Foreground = error ? ErrorBrush : InfoBrush;
+        RequestStatusText.Visibility = text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private void EmailBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)

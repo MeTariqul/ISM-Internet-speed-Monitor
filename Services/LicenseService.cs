@@ -208,10 +208,16 @@ public sealed class LicenseService
 
         if (!response.Ok)
         {
-            // Suspended / expired / revoked / device removed: drop the token so the next launch locks.
-            _token = null;
-            _claims = null;
-            Save();
+            // Only drop the token when the server says this license/device is genuinely gone.
+            // A server-side misconfiguration ("Unknown app." / "not valid for this app") must not
+            // destroy a valid, signed token - that would lock out every paying customer.
+            if (IsLicenseRevoked(response))
+            {
+                _token = null;
+                _claims = null;
+                Save();
+            }
+
             return LicenseResult.Fail(Friendly(response), response.Status);
         }
 
@@ -407,6 +413,29 @@ public sealed class LicenseService
         if (element.TryGetInt64(out long integer)) return integer;
         // Some serializers emit whole milliseconds as 1.7e12 / 1700000000000.0.
         return element.TryGetDouble(out double number) ? (long)number : 0;
+    }
+
+    /// <summary>
+    /// True only for rejections that mean this specific license/device is no longer allowed.
+    /// "invalid" and unknown statuses are treated as ambiguous: they can also come from a
+    /// server-side app misconfiguration, which must not invalidate a signed token.
+    /// </summary>
+    private static bool IsLicenseRevoked(ApiResponse response)
+    {
+        string code = (response.Status ?? string.Empty).Trim().ToLowerInvariant();
+        string error = (response.Error ?? string.Empty).ToLowerInvariant();
+
+        if (code is "suspended" or "expired" or "revoked" or "revoked_device" or "device_limit")
+        {
+            return true;
+        }
+
+        // Fall back to the message when the status is generic.
+        return error.Contains("has expired", StringComparison.Ordinal) ||
+               error.Contains("suspended", StringComparison.Ordinal) ||
+               error.Contains("revoked", StringComparison.Ordinal) ||
+               error.Contains("removed from the license", StringComparison.Ordinal) ||
+               error.Contains("maximum number of devices", StringComparison.Ordinal);
     }
 
     private static string Friendly(ApiResponse response)

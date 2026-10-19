@@ -96,6 +96,12 @@
                         Click="Request_Click" />
             </Grid>
 
+            <TextBlock x:Name="RequestStatusText"
+                       Margin="0,8,0,0"
+                       TextWrapping="Wrap"
+                       LineHeight="18"
+                       Visibility="Collapsed" />
+
             <TextBlock Margin="0,16,0,0"
                        TextWrapping="Wrap"
                        FontSize="11.5"

@@ -113,27 +113,20 @@ public partial class App : System.Windows.Application
         {
             // Off the UI thread so the awaits cannot dead-lock the starter; this only runs
             // when the token's re-check time has passed.
-            LicenseResult online;
             try
             {
-                online = Task.Run(() => License.VerifyAsync()).GetAwaiter().GetResult();
+                Task.Run(() => License.VerifyAsync()).GetAwaiter().GetResult();
             }
             catch
             {
-                // Treat an unexpected client failure like a network outage: keep the offline token.
-                online = LicenseResult.Fail("Could not re-check the license.", networkFailure: true);
+                // An unexpected client failure is treated like a network outage below.
             }
 
-            if (!online.Ok && !online.NetworkFailure)
-            {
-                // Suspended, expired, revoked or device removed: the token is already dropped.
-                offline = online;
-            }
-            else if (online.Ok)
-            {
-                offline = License.ValidateOffline();
-            }
-            // On a network failure the still-valid offline token is kept and startup continues.
+            // The signed token is the source of truth. VerifyAsync only deletes it for a
+            // definite revocation (suspended / expired / revoked / device removed); any other
+            // server failure (outage, misconfigured app, "Unknown app.") leaves it intact, so a
+            // still-valid token keeps the app running.
+            offline = License.ValidateOffline();
         }
 
         if (offline.Ok) return true;
