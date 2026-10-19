@@ -81,9 +81,27 @@ public sealed class MetricsSampler : IDisposable
             using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
             try
             {
-                while (await timer.WaitForNextTickAsync(token))
+                while (await timer.WaitForNextTickAsync(token).ConfigureAwait(false))
                 {
-                    Sampled?.Invoke(TakeSample());
+                    Sample sample;
+                    try
+                    {
+                        sample = TakeSample();
+                    }
+                    catch
+                    {
+                        // A single bad counter read must not stop the loop.
+                        continue;
+                    }
+
+                    try
+                    {
+                        Sampled?.Invoke(sample);
+                    }
+                    catch
+                    {
+                        // A throwing subscriber (UI torn down during exit) must not kill sampling.
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -105,10 +123,8 @@ public sealed class MetricsSampler : IDisposable
             double available = Read(_memAvailable);
 
             double totalMb = SystemInfo.TotalPhysicalMb;
-            double memPercent = double.IsNaN(available) || totalMb <= 0
-                ? double.NaN
-                : (totalMb - available) / totalMb * 100d;
-            double usedMb = double.IsNaN(available) ? double.NaN : totalMb - available;
+            double memPercent = BandwidthMath.PercentUsed(totalMb, available);
+            double usedMb = BandwidthMath.Used(totalMb, available);
 
             return new Sample(DateTime.Now, down, up, read, write, cpu, memPercent, usedMb);
         }
@@ -199,7 +215,7 @@ public sealed class MetricsSampler : IDisposable
         _disposed = true;
 
         _cts?.Cancel();
-        try { _loop?.Wait(TimeSpan.FromSeconds(2)); } catch { /* ignore */ }
+        try { _loop?.Wait(TimeSpan.FromSeconds(1)); } catch { /* ignore */ }
         _cts?.Dispose();
 
         lock (_sync)
