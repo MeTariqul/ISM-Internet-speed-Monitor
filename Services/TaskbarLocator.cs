@@ -1,6 +1,3 @@
-using System.Runtime.InteropServices;
-using System.Text;
-
 namespace SpeedMonitor.Services;
 
 /// <summary>Rectangle in device pixels.</summary>
@@ -13,19 +10,38 @@ public readonly record struct RectPx(int Left, int Top, int Right, int Bottom)
         => Left < other.Right && Right > other.Left && Top < other.Bottom && Bottom > other.Top;
 }
 
-/// <summary>Finds the Windows taskbar and its notification area (the tray).</summary>
+/// <summary>
+/// Finds the Windows taskbar and its notification area (the tray).
+///
+/// Windows 11 can replace or momentarily hide the shell windows (auto-hide, Explorer restart,
+/// mixed-DPI docks). Every call here is defensive: a missing taskbar returns false with an
+/// empty rect so the caller can fall back to a floating widget instead of throwing.
+/// </summary>
 public static class TaskbarLocator
 {
     private const string TaskbarClass = "Shell_TrayWnd";
     private const string TrayClass = "TrayNotifyWnd";
     private const int FallbackTrayWidth = 220;
 
-    public static IntPtr FindTaskbar() => NativeMethods.FindWindow(TaskbarClass, null);
+    /// <summary>Taskbar handle, or <see cref="IntPtr.Zero"/> when the shell is not available.</summary>
+    public static IntPtr FindTaskbar()
+    {
+        IntPtr handle = NativeMethods.TryFindWindow(TaskbarClass, null);
+        return handle;
+    }
+
+    /// <summary>Taskbar handle plus its on-screen rectangle, in one defensive call.</summary>
+    public static bool TryGetTaskbarRect(out IntPtr taskbar, out RectPx rect)
+    {
+        taskbar = FindTaskbar();
+        return TryGetRect(taskbar, out rect);
+    }
 
     public static bool TryGetRect(IntPtr hwnd, out RectPx rect)
     {
         rect = default;
-        if (hwnd == IntPtr.Zero || !NativeMethods.GetWindowRect(hwnd, out NativeMethods.Rect r)) return false;
+        if (!NativeMethods.TryGetWindowRect(hwnd, out NativeMethods.Rect r)) return false;
+
         rect = new RectPx(r.Left, r.Top, r.Right, r.Bottom);
         return rect.Width > 0 && rect.Height > 0;
     }
@@ -38,20 +54,28 @@ public static class TaskbarLocator
     {
         IntPtr tray = IntPtr.Zero;
 
-        NativeMethods.EnumChildWindowsProc callback = (child, _) =>
+        try
         {
-            var buffer = new StringBuilder(64);
-            NativeMethods.GetClassName(child, buffer, buffer.Capacity);
-            if (string.Equals(buffer.ToString(), TrayClass, StringComparison.Ordinal))
+            NativeMethods.EnumChildWindowsProc callback = (child, _) =>
             {
-                tray = child;
-                return false; // stop enumerating
-            }
-            return true;
-        };
+                if (string.Equals(
+                        NativeMethods.TryGetClassName(child), TrayClass, StringComparison.Ordinal))
+                {
+                    tray = child;
+                    return false; // stop enumerating
+                }
 
-        NativeMethods.EnumChildWindows(taskbar, callback, IntPtr.Zero);
-        GC.KeepAlive(callback);
+                return true;
+            };
+
+            NativeMethods.TryEnumChildWindows(taskbar, callback);
+            GC.KeepAlive(callback);
+        }
+        catch
+        {
+            // Explorer is restarting or the taskbar is gone; use the geometric fallback below.
+            tray = IntPtr.Zero;
+        }
 
         if (tray != IntPtr.Zero && TryGetRect(tray, out RectPx rect) && rect.Width > 0)
         {

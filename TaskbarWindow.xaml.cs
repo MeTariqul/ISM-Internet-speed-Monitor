@@ -18,6 +18,8 @@ public partial class TaskbarWindow : Window
 {
     private const int GapToTrayPx = 8;
     private const int EdgePaddingPx = 4;
+    private const int FallbackHeightDip = 30;
+    private const int FallbackMarginPx = 12;
     private static readonly TimeSpan ThemeSampleInterval = TimeSpan.FromSeconds(2);
 
     private static readonly Brush LightText = Frozen(0xF2, 0xF5, 0xF7);
@@ -67,7 +69,6 @@ public partial class TaskbarWindow : Window
     public void SetOverlayVisible(bool visible)
     {
         _userWantsVisible = visible;
-        ApplyVisible(visible && TaskbarVisible());
         Reposition();
     }
 
@@ -100,20 +101,29 @@ public partial class TaskbarWindow : Window
         _repositioning = true;
         try
         {
-            IntPtr taskbar = TaskbarLocator.FindTaskbar();
-            if (!TaskbarLocator.TryGetRect(taskbar, out RectPx taskbarRect))
-            {
-                return; // shell not ready yet; try again on the next tick
-            }
+            bool taskbarFound = TaskbarLocator.TryGetTaskbarRect(out IntPtr taskbar, out RectPx taskbarRect);
+            bool taskbarUsable = taskbarFound
+                && NativeMethods.TryIsWindowVisible(taskbar)
+                && IntersectsWithScreen(taskbarRect);
 
             if (_ready)
             {
-                ApplyVisible(_userWantsVisible && NativeMethods.IsWindowVisible(taskbar) && IntersectsWithScreen(taskbarRect));
+                // A missing shell window (Explorer restart, Windows 11 docking failure) keeps the
+                // widget alive as a floating widget. A taskbar that exists but is auto-hidden
+                // still hides the overlay with it, as before.
+                ApplyVisible(_userWantsVisible && (taskbarUsable || !taskbarFound));
             }
 
             if (!IsVisible) return;
 
             double scale = PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice.M11 ?? 1d;
+
+            if (!taskbarUsable)
+            {
+                PositionFloating(scale);
+                return;
+            }
+
             RectPx screen = PrimaryScreenPx();
 
             bool horizontal = taskbarRect.Bottom >= screen.Bottom - 1 || taskbarRect.Top <= screen.Top + 1;
@@ -146,7 +156,7 @@ public partial class TaskbarWindow : Window
                 if (y < taskbarRect.Top + EdgePaddingPx) y = taskbarRect.Top + EdgePaddingPx;
             }
 
-            NativeMethods.SetWindowPos(
+            NativeMethods.TrySetWindowPos(
                 _hwnd,
                 IntPtr.Zero,
                 x,
@@ -157,7 +167,7 @@ public partial class TaskbarWindow : Window
 
             // The taskbar lifts itself above other topmost windows whenever it is clicked,
             // which would bury the readout - so re-assert our z-order on every tick.
-            NativeMethods.SetWindowPos(
+            NativeMethods.TrySetWindowPos(
                 _hwnd,
                 NativeMethods.HwndTopmost,
                 0,
@@ -174,6 +184,41 @@ public partial class TaskbarWindow : Window
         }
     }
 
+    /// <summary>
+    /// Windows 11 fallback: dock to the bottom-right of the work area when the shell taskbar
+    /// cannot be found. Keeps the monitor usable instead of leaving a stray window or hiding it.
+    /// </summary>
+    private void PositionFloating(double scale)
+    {
+        if (Math.Abs(Height - FallbackHeightDip) > 0.5) Height = FallbackHeightDip;
+
+        RectPx work = PrimaryWorkAreaPx();
+        int widthPx = Math.Max(1, (int)Math.Round(ActualWidth * scale));
+        int heightPx = Math.Max(1, (int)Math.Round(Height * scale));
+        int margin = Math.Max(1, (int)Math.Round(FallbackMarginPx * scale));
+
+        int x = Math.Max(work.Left + EdgePaddingPx, work.Right - widthPx - margin);
+        int y = Math.Max(work.Top + EdgePaddingPx, work.Bottom - heightPx - margin);
+
+        NativeMethods.TrySetWindowPos(
+            _hwnd,
+            IntPtr.Zero,
+            x,
+            y,
+            0,
+            0,
+            NativeMethods.SWP_NOSIZE | NativeMethods.SWP_NOZORDER | NativeMethods.SWP_NOACTIVATE);
+
+        NativeMethods.TrySetWindowPos(
+            _hwnd,
+            NativeMethods.HwndTopmost,
+            0,
+            0,
+            0,
+            0,
+            NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_NOACTIVATE);
+    }
+
     private void ApplyVisible(bool visible)
     {
         if (visible == IsVisible) return;
@@ -183,21 +228,35 @@ public partial class TaskbarWindow : Window
 
     private static bool IntersectsWithScreen(RectPx rect) => rect.IntersectsWith(PrimaryScreenPx());
 
-    private static bool TaskbarVisible()
-    {
-        IntPtr taskbar = TaskbarLocator.FindTaskbar();
-        return taskbar != IntPtr.Zero
-            && NativeMethods.IsWindowVisible(taskbar)
-            && TaskbarLocator.TryGetRect(taskbar, out RectPx rect)
-            && IntersectsWithScreen(rect);
-    }
-
     private static RectPx PrimaryScreenPx()
     {
-        System.Drawing.Rectangle bounds =
-            System.Windows.Forms.Screen.PrimaryScreen?.Bounds
-            ?? new System.Drawing.Rectangle(0, 0, 1920, 1080);
-        return new RectPx(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
+        try
+        {
+            System.Drawing.Rectangle bounds =
+                System.Windows.Forms.Screen.PrimaryScreen?.Bounds
+                ?? new System.Drawing.Rectangle(0, 0, 1920, 1080);
+            return new RectPx(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
+        }
+        catch
+        {
+            // Display mode change / session teardown: assume a safe virtual screen.
+            return new RectPx(0, 0, 1920, 1080);
+        }
+    }
+
+    private static RectPx PrimaryWorkAreaPx()
+    {
+        try
+        {
+            System.Drawing.Rectangle bounds =
+                System.Windows.Forms.Screen.PrimaryScreen?.WorkingArea
+                ?? new System.Drawing.Rectangle(0, 0, 1920, 1040);
+            return new RectPx(bounds.Left, bounds.Top, bounds.Right, bounds.Bottom);
+        }
+        catch
+        {
+            return new RectPx(0, 0, 1920, 1040);
+        }
     }
 
     // ---------------------------------------------------------------- contrast
@@ -264,7 +323,14 @@ public partial class TaskbarWindow : Window
         const int GwlExStyle = -20;
         const int WsExNoActivate = 0x08000000;
 
-        int style = NativeMethods.GetWindowLong(hwnd, GwlExStyle);
-        NativeMethods.SetWindowLong(hwnd, GwlExStyle, style | WsExNoActivate);
+        try
+        {
+            int style = NativeMethods.TryGetWindowLong(hwnd, GwlExStyle);
+            NativeMethods.TrySetWindowLong(hwnd, GwlExStyle, style | WsExNoActivate);
+        }
+        catch
+        {
+            // Style tweaks are best-effort; the window still works without them.
+        }
     }
 }

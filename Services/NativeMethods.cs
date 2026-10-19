@@ -58,4 +58,123 @@ internal static class NativeMethods
 
     [DllImport("user32.dll", EntryPoint = "SetWindowLong")]
     public static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+
+    // ------------------------------------------------------------------ safe wrappers
+    // P/Invoke itself should not throw on Windows, but a torn-down or replaced shell window
+    // handle can make a call fail in surprising ways. Every wrapper here swallows failures
+    // and reports false / a neutral value so the overlay degrades instead of crashing Explorer.
+
+    public static IntPtr TryFindWindow(string? className, string? windowName)
+    {
+        try
+        {
+            return FindWindow(className, windowName);
+        }
+        catch
+        {
+            return IntPtr.Zero;
+        }
+    }
+
+    public static bool TryGetWindowRect(IntPtr hwnd, out Rect rect)
+    {
+        rect = default;
+        if (hwnd == IntPtr.Zero) return false;
+
+        try
+        {
+            return GetWindowRect(hwnd, out rect) && rect.Width > 0 && rect.Height > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static bool TryIsWindowVisible(IntPtr hwnd)
+    {
+        if (hwnd == IntPtr.Zero) return false;
+
+        try
+        {
+            return IsWindowVisible(hwnd);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static bool TrySetWindowPos(
+        IntPtr hwnd, IntPtr insertAfter, int x, int y, int cx, int cy, uint flags)
+    {
+        if (hwnd == IntPtr.Zero) return false;
+
+        try
+        {
+            return SetWindowPos(hwnd, insertAfter, x, y, cx, cy, flags);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static string TryGetClassName(IntPtr hwnd)
+    {
+        if (hwnd == IntPtr.Zero) return string.Empty;
+
+        try
+        {
+            var buffer = new StringBuilder(64);
+            return GetClassName(hwnd, buffer, buffer.Capacity) > 0 ? buffer.ToString() : string.Empty;
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    public static bool TryEnumChildWindows(IntPtr parent, EnumChildWindowsProc callback)
+    {
+        if (parent == IntPtr.Zero) return false;
+
+        try
+        {
+            return EnumChildWindows(parent, callback, IntPtr.Zero);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static int TryGetWindowLong(IntPtr hwnd, int index)
+    {
+        if (hwnd == IntPtr.Zero) return 0;
+
+        try
+        {
+            return GetWindowLong(hwnd, index);
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    public static bool TrySetWindowLong(IntPtr hwnd, int index, int value)
+    {
+        if (hwnd == IntPtr.Zero) return false;
+
+        try
+        {
+            SetWindowLong(hwnd, index, value);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }
