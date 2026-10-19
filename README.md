@@ -18,13 +18,30 @@ double-click it, or install it properly in one click from the menu (see
 
 ## Download
 
-**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.3.0/ISM-Internet-Speed-Monitor.exe)** (71 MB, single file)
+**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.0/ISM-Internet-Speed-Monitor.exe)** (71 MB, single file)
 
 Or grab it from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
 page, then double-click it — nothing else to install. The .NET runtime and every
 dependency are baked in (self-contained, single file), so it works on any 64-bit
 Windows 10/11 without the .NET runtime. A license key is required; the first launch
 offers to email one to you (see *Licensing*).
+
+## What's new in 1.4.0
+
+- **Never locked out by a server hiccup** – the offline token is only discarded on a
+  definite revocation (suspended / expired / revoked / device removed). A server
+  outage or misconfiguration no longer destroys a valid license.
+- **Windows 11 fallback** – if the shell taskbar cannot be found (Explorer restart,
+  docking failure), the readout becomes a floating widget at the bottom-right
+  instead of vanishing. All Win32 calls are wrapped in non-throwing helpers.
+- **Cleaner license dialog** – key-request feedback is shown next to the email
+  field instead of under the key field, so a failed request no longer looks like
+  a failed activation.
+- **Rebuilt internals** – DI composition root, source-generated MVVM view model,
+  a resilient 1 Hz sampling loop, and a full xUnit test suite (47 tests) that
+  runs in CI on every push.
+- **CI & releases** – GitHub Actions now builds, tests, packages the single-file
+  exe and attaches it to each tagged release automatically.
 
 ## What it shows
 
