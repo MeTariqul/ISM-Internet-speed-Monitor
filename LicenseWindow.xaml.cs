@@ -13,13 +13,13 @@ public partial class LicenseWindow : Window
     private static readonly Brush ErrorBrush = new SolidColorBrush(Color.FromRgb(0xB3, 0x26, 0x1E));
     private static readonly Brush InfoBrush = new SolidColorBrush(Color.FromRgb(0x2F, 0x6F, 0x4E));
 
-    private readonly LicenseService _license;
+    private readonly ILicenseService _license;
     private bool _busy;
     private bool _closed;
     private bool _statusIsError;
     private string _activateLabel = "Activate";
 
-    public LicenseWindow(LicenseService license, string? message = null)
+    public LicenseWindow(ILicenseService license, string? message = null)
     {
         InitializeComponent();
 

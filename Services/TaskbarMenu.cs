@@ -12,7 +12,8 @@ public sealed class TaskbarMenu : IDisposable
 {
     private readonly AppSettings _settings;
     private readonly MonitorViewModel _viewModel;
-    private readonly Action<string?> _setAdapter;
+    private readonly MetricsSampler _sampler;
+    private readonly LicenseDialogService _licenseDialog;
     private readonly Action<bool> _applyTextVisibility;
     private readonly Action _exit;
 
@@ -26,21 +27,20 @@ public sealed class TaskbarMenu : IDisposable
     private readonly WinForms.ToolStripMenuItem[] _unitItems;
     private readonly WinForms.ToolStripMenuItem _adapters;
     private readonly WinForms.ToolStripMenuItem _installItem;
-    private readonly Action _openLicense;
 
     public TaskbarMenu(
         AppSettings settings,
         MonitorViewModel viewModel,
-        Action<string?> setAdapter,
+        MetricsSampler sampler,
+        LicenseDialogService licenseDialog,
         Action<bool> applyTextVisibility,
-        Action openLicense,
         Action exit)
     {
         _settings = settings;
         _viewModel = viewModel;
-        _setAdapter = setAdapter;
+        _sampler = sampler;
+        _licenseDialog = licenseDialog;
         _applyTextVisibility = applyTextVisibility;
-        _openLicense = openLicense;
         _exit = exit;
 
         _menu = new WinForms.ContextMenuStrip { ShowImageMargin = true };
@@ -85,7 +85,7 @@ public sealed class TaskbarMenu : IDisposable
         _menu.Items.Add(_adapters);
         _menu.Items.Add(new WinForms.ToolStripSeparator());
         _menu.Items.Add(_installItem);
-        _menu.Items.Add(MakeItem("License...", (_, _) => _openLicense(), checkable: false));
+        _menu.Items.Add(MakeItem("License...", (_, _) => _licenseDialog.ShowLicense(), checkable: false));
         _menu.Items.Add(MakeItem("About / Credits", About_Click, checkable: false));
         _menu.Items.Add(MakeItem("Exit", (_, _) => _exit(), checkable: false));
 
@@ -207,7 +207,7 @@ public sealed class TaskbarMenu : IDisposable
 
         string? adapter = key.Length == 0 ? null : key;
         _settings.Adapter = adapter;
-        _setAdapter(adapter);
+        _sampler.SetAdapter(adapter);
         Sync();
         SaveNow();
     }

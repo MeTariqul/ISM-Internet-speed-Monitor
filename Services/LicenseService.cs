@@ -44,7 +44,7 @@ public sealed record KeyRequestResult(bool Ok, string? Error = null, string? Key
 /// The token is stored in %AppData%\SpeedMonitor\license.json together with the user's key
 /// (needed for the periodic re-check). Both are deleted on uninstall.
 /// </summary>
-public sealed class LicenseService
+public sealed class LicenseService : ILicenseService
 {
     private const string BaseUrl = "https://metariqul.vercel.app";
     private const string AppKey = "appk_EBFlOccJ5FiH2HbKaAkFRuZ7wJMgvTBR";

@@ -1,11 +1,15 @@
 using System.IO;
 using System.Windows;
-using SpeedMonitor.Metrics;
+using Microsoft.Extensions.DependencyInjection;
 using SpeedMonitor.Services;
-using SpeedMonitor.ViewModels;
 
 namespace SpeedMonitor;
 
+/// <summary>
+/// Process-level entry point: command-line handling, single-instance signalling, the
+/// licensing gate and building the DI container. Runtime wiring lives in
+/// <see cref="AppController"/>.
+/// </summary>
 public partial class App : System.Windows.Application
 {
     private const string MutexName = @"Local\SpeedMonitor.SingleInstance";
@@ -13,15 +17,8 @@ public partial class App : System.Windows.Application
 
     private Mutex? _instanceMutex;
     private EventWaitHandle? _showSignal;
-    private TaskbarWindow? _window;
-    private TaskbarMenu? _menu;
-    private TrayIconService? _tray;
-    private bool _exiting;
-
-    public AppSettings Settings { get; } = AppSettings.Load();
-    public LicenseService License { get; } = new();
-    public MetricsSampler Sampler { get; private set; } = null!;
-    public MonitorViewModel ViewModel { get; private set; } = null!;
+    private ServiceProvider? _services;
+    private AppController? _controller;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -48,56 +45,27 @@ public partial class App : System.Windows.Application
 
         ThreadPool.RegisterWaitForSingleObject(
             _showSignal,
-            (_, _) => Dispatcher.BeginInvoke(new Action(ShowMenu)),
+            (_, _) => Dispatcher.BeginInvoke(new Action(() => _controller?.ShowMenu())),
             null,
             Timeout.Infinite,
             executeOnlyOnce: false);
 
         DispatcherUnhandledException += OnDispatcherUnhandledException;
 
+        _services = CompositionRoot.Build();
+
+        var license = _services.GetRequiredService<ILicenseService>();
+        var dialogs = _services.GetRequiredService<LicenseDialogService>();
+
         // Hard block: no valid license, no monitor. /install and /uninstall still work above.
-        if (!EnsureLicensed())
+        if (!EnsureLicensed(license, dialogs))
         {
             Shutdown();
             return;
         }
 
-        Sampler = new MetricsSampler(Settings.Adapter);
-        ViewModel = new MonitorViewModel(Settings);
-        Sampler.Sampled += OnSampled;
-        Sampler.Start();
-
-        _menu = new TaskbarMenu(
-            Settings,
-            ViewModel,
-            setAdapter: adapter => Sampler.SetAdapter(adapter),
-            applyTextVisibility: visible => _window?.SetOverlayVisible(visible),
-            openLicense: ShowLicense,
-            exit: ExitApp);
-
-        _window = new TaskbarWindow(ViewModel, _menu, Settings.ShowTaskbarText);
-        if (Settings.ShowTaskbarText)
-        {
-            _window.Show();
-        }
-
-        _tray = new TrayIconService(_menu.Menu, ShowMenu);
-        _tray.SetText(ViewModel.TrayText);
-    }
-
-    private void OnSampled(Sample sample)
-    {
-        // Raised on the sampler thread; marshal everything to the UI thread.
-        Dispatcher.BeginInvoke(new Action(() =>
-        {
-            ViewModel.AddSample(sample);
-            _tray?.SetText(ViewModel.TrayText);
-        }));
-    }
-
-    private void ShowMenu()
-    {
-        _menu?.ShowAt(System.Windows.Forms.Cursor.Position);
+        _controller = _services.GetRequiredService<AppController>();
+        _controller.Start();
     }
 
     /// <summary>
@@ -105,17 +73,17 @@ public partial class App : System.Windows.Application
     /// asks for it (or the app was never activated) the server is consulted or the activation
     /// dialog is shown. Cancelling the dialog means exit.
     /// </summary>
-    private bool EnsureLicensed()
+    private static bool EnsureLicensed(ILicenseService license, LicenseDialogService dialogs)
     {
-        LicenseResult offline = License.ValidateOffline();
+        LicenseResult offline = license.ValidateOffline();
 
-        if (offline.Ok && License.NeedsRecheck)
+        if (offline.Ok && license.NeedsRecheck)
         {
             // Off the UI thread so the awaits cannot dead-lock the starter; this only runs
             // when the token's re-check time has passed.
             try
             {
-                Task.Run(() => License.VerifyAsync()).GetAwaiter().GetResult();
+                Task.Run(() => license.VerifyAsync()).GetAwaiter().GetResult();
             }
             catch
             {
@@ -126,15 +94,13 @@ public partial class App : System.Windows.Application
             // definite revocation (suspended / expired / revoked / device removed); any other
             // server failure (outage, misconfigured app, "Unknown app.") leaves it intact, so a
             // still-valid token keeps the app running.
-            offline = License.ValidateOffline();
+            offline = license.ValidateOffline();
         }
 
         if (offline.Ok) return true;
 
-        return new LicenseWindow(License, offline.Error).ShowDialog() == true;
+        return dialogs.ShowActivation(offline.Error);
     }
-
-    private void ShowLicense() => new LicenseWindow(License).ShowDialog();
 
     /// <summary>Handles /install, /uninstall and /help. Returns true when the args were a command.</summary>
     private bool HandleCommandLine(string[] args)
@@ -201,30 +167,14 @@ public partial class App : System.Windows.Application
     private static bool HasFlag(string[] args, params string[] names) =>
         args.Any(a => names.Contains(a, StringComparer.OrdinalIgnoreCase));
 
-    public void ExitApp()
-    {
-        if (_exiting) return;
-        _exiting = true;
-
-        Settings.Save();
-
-        _tray?.Dispose();
-        _tray = null;
-        _menu?.Dispose();
-        _menu = null;
-
-        if (_window is not null)
-        {
-            _window.Close();
-            _window = null;
-        }
-
-        Sampler.Dispose();
-        Shutdown();
-    }
-
     protected override void OnExit(ExitEventArgs e)
     {
+        _controller = null;
+
+        // Disposes the singleton services (sampler, tray icon, menu) in reverse order.
+        _services?.Dispose();
+        _services = null;
+
         _showSignal?.Dispose();
         _instanceMutex?.Dispose();
         base.OnExit(e);

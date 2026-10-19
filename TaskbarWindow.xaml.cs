@@ -24,7 +24,6 @@ public partial class TaskbarWindow : Window
     private static readonly Brush DarkText = Frozen(0x11, 0x14, 0x18);
 
     private readonly MonitorViewModel _viewModel;
-    private readonly TaskbarMenu _menu;
     private readonly DispatcherTimer _timer;
 
     private IntPtr _hwnd;
@@ -34,10 +33,12 @@ public partial class TaskbarWindow : Window
     private bool _darkTextOnLightBar;
     private bool _repositioning;
 
-    public TaskbarWindow(MonitorViewModel viewModel, TaskbarMenu menu, bool initiallyVisible)
+    /// <summary>Raised when the overlay is clicked; the controller decides which menu to show.</summary>
+    public event EventHandler? MenuRequested;
+
+    public TaskbarWindow(MonitorViewModel viewModel, bool initiallyVisible)
     {
         _viewModel = viewModel;
-        _menu = menu;
         _userWantsVisible = initiallyVisible;
 
         InitializeComponent();
@@ -87,7 +88,7 @@ public partial class TaskbarWindow : Window
         // Show after the current mouse message is fully processed; showing a WinForms
         // menu synchronously from inside a WPF MouseUp handler makes it close instantly.
         Dispatcher.BeginInvoke(
-            new Action(() => _menu.ShowAt(System.Windows.Forms.Cursor.Position)),
+            new Action(() => MenuRequested?.Invoke(this, EventArgs.Empty)),
             DispatcherPriority.Background);
     }
 
