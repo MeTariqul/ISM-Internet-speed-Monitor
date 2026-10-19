@@ -1,48 +1,50 @@
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using SpeedMonitor.Metrics;
 using SpeedMonitor.Services;
 
 namespace SpeedMonitor.ViewModels;
 
-/// <summary>Formats the current readings for the taskbar overlay and the tray tooltip.</summary>
-public sealed class MonitorViewModel : INotifyPropertyChanged
+/// <summary>
+/// Formats the current readings for the taskbar overlay and the tray tooltip.
+/// Uses the CommunityToolkit source generators so property change notification
+/// stays boilerplate-free.
+/// </summary>
+public sealed partial class MonitorViewModel : ObservableObject
 {
     private readonly AppSettings _settings;
     private Sample _last;
     private bool _hasSample;
-    private UnitMode _units;
 
     public MonitorViewModel(AppSettings settings)
     {
-        _settings = settings;
+        _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _units = settings.UnitMode;
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    public UnitMode Units
-    {
-        get => _units;
-        set
-        {
-            if (_units == value) return;
-            _units = value;
-            _settings.Units = value switch
-            {
-                UnitMode.KiloBytes => "KB",
-                UnitMode.Megabits => "Mbps",
-                _ => "Auto",
-            };
-            Refresh();
-        }
-    }
+    /// <summary>Selected network unit; changing it is persisted immediately.</summary>
+    [ObservableProperty]
+    private UnitMode _units;
 
     /// <summary>What the taskbar overlay shows, e.g. "↑ 1.24 MB/s   ↓ 340 KB/s".</summary>
-    public string TaskbarText { get; private set; } = "\u2026";
+    [ObservableProperty]
+    private string _taskbarText = "\u2026";
 
     /// <summary>Tray icon tooltip (max 127 characters).</summary>
-    public string TrayText { get; private set; } = "Speed Monitor";
+    [ObservableProperty]
+    private string _trayText = "Speed Monitor";
+
+    partial void OnUnitsChanged(UnitMode value)
+    {
+        _settings.Units = value switch
+        {
+            UnitMode.KiloBytes => "KB",
+            UnitMode.Megabits => "Mbps",
+            _ => "Auto",
+        };
+
+        Refresh();
+    }
 
     public void AddSample(Sample sample)
     {
@@ -52,6 +54,7 @@ public sealed class MonitorViewModel : INotifyPropertyChanged
     }
 
     /// <summary>Recomputes the texts; call after a sample or after a display setting changed.</summary>
+    [RelayCommand]
     public void Refresh()
     {
         Sample s = _last;
@@ -90,11 +93,5 @@ public sealed class MonitorViewModel : INotifyPropertyChanged
 
         TaskbarText = string.Join("   ", parts);
         TrayText = $"ISM {TaskbarText}";
-
-        Raise(nameof(TaskbarText));
-        Raise(nameof(TrayText));
     }
-
-    private void Raise([CallerMemberName] string? name = null)
-        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }

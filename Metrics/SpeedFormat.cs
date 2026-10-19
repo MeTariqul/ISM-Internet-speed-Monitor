@@ -27,7 +27,7 @@ public static class SpeedFormat
 
         if (mode == UnitMode.Megabits)
         {
-            double mbps = bytesPerSecond * 8d / 1_000_000d;
+            double mbps = BandwidthMath.ToMegabitsPerSecond(bytesPerSecond);
             return mbps >= 100 ? $"{mbps:0} Mbps" : $"{mbps:0.0} Mbps";
         }
 
@@ -45,7 +45,7 @@ public static class SpeedFormat
 
         if (mode == UnitMode.Megabits)
         {
-            double mbps = bytesPerSecond * 8d / 1_000_000d;
+            double mbps = BandwidthMath.ToMegabitsPerSecond(bytesPerSecond);
             return mbps >= 100 ? $"{mbps:0}Mb" : $"{mbps:0.0}Mb";
         }
 

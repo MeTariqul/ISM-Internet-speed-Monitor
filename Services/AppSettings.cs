@@ -20,6 +20,13 @@ public sealed class AppSettings
 
     private const string AutostartValueName = "SpeedMonitor";
 
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNameCaseInsensitive = true,
+    };
+
+
     /// <summary>Derived from <see cref="Units"/> - never persisted, never read from disk.</summary>
     [JsonIgnore]
     public UnitMode UnitMode => Units switch
@@ -44,13 +51,31 @@ public sealed class AppSettings
         {
             if (File.Exists(FilePath))
             {
-                AppSettings? loaded = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(FilePath));
+                AppSettings? loaded = FromJson(File.ReadAllText(FilePath));
                 if (loaded is not null) return loaded;
             }
         }
         catch { /* corrupt or unreadable settings simply fall back to defaults */ }
 
         return new AppSettings();
+    }
+
+    /// <summary>Round-trips this instance to JSON. Public so tests and tooling can use it.</summary>
+    public string ToJson() => JsonSerializer.Serialize(this, JsonOptions);
+
+    /// <summary>Parses settings JSON; returns <c>null</c> for blank/invalid input.</summary>
+    public static AppSettings? FromJson(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return null;
+
+        try
+        {
+            return JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     public void Save()
@@ -60,7 +85,7 @@ public sealed class AppSettings
         {
             string? dir = Path.GetDirectoryName(FilePath);
             if (dir is not null) Directory.CreateDirectory(dir);
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
+            File.WriteAllText(FilePath, ToJson());
         }
         catch { /* never crash over settings */ }
     }
