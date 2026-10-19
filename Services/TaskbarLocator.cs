@@ -24,11 +24,7 @@ public static class TaskbarLocator
     private const int FallbackTrayWidth = 220;
 
     /// <summary>Taskbar handle, or <see cref="IntPtr.Zero"/> when the shell is not available.</summary>
-    public static IntPtr FindTaskbar()
-    {
-        IntPtr handle = NativeMethods.TryFindWindow(TaskbarClass, null);
-        return handle;
-    }
+    public static IntPtr FindTaskbar() => NativeMethods.TryFindWindow(TaskbarClass, null);
 
     /// <summary>Taskbar handle plus its on-screen rectangle, in one defensive call.</summary>
     public static bool TryGetTaskbarRect(out IntPtr taskbar, out RectPx rect)

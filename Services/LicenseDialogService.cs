@@ -1,5 +1,3 @@
-using SpeedMonitor.Services;
-
 namespace SpeedMonitor.Services;
 
 /// <summary>
