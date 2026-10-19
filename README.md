@@ -1,5 +1,7 @@
 # ISM - Internet Speed Monitor
 
+[![CI](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/actions/workflows/ci.yml)
+
 **Speed Monitor** – a DU Meter style network/system meter that draws your live
 speeds **inside the Windows taskbar**, just to the left of the notification area:
 
@@ -46,6 +48,10 @@ With *Also show CPU / RAM* enabled, `CPU 12%  RAM 68%` is appended.
 - **Never steals focus** – `WS_EX_NOACTIVATE` plus per-tick z-order
   re-assertion, so the taskbar lifting itself on click can't bury the readout
   and clicking it never minimises your application.
+- **Survives a missing taskbar** – if Windows 11 replaces or hides the shell
+  taskbar (Explorer restart, docking failure), the readout falls back to a
+  floating widget at the bottom-right of the work area instead of disappearing
+  or crashing. Every Win32 call is wrapped in a safe helper.
 - **Click or right-click the readout** (or the tray icon) for the settings menu:
   - show/hide the taskbar text
   - text format (network / disk / both) and *Also show CPU / RAM*
@@ -118,14 +124,31 @@ If a counter is unavailable the value shows `—` instead of crashing.
 ## Build & run
 
 Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+The repository root is a solution (`SpeedMonitor.sln`) containing the WPF app and
+the xUnit test project.
 
 ```powershell
-dotnet build -c Release
+dotnet build SpeedMonitor.sln -c Release
+dotnet test  SpeedMonitor.sln -c Release
 .\bin\Release\net8.0-windows\ISM-Internet-Speed-Monitor.exe
 ```
 
 With a user-scope SDK, launch from a shell where `DOTNET_ROOT` points at your
 dotnet folder.
+
+### Architecture at a glance
+
+- **Composition root** – `Services/CompositionRoot.cs` builds a
+  `Microsoft.Extensions.DependencyInjection` container; `App.xaml.cs` only handles
+  the command line, single-instance mutex and the licensing gate.
+- **Runtime wiring** – `Services/AppController.cs` owns the sampler → view model →
+  tray flow and the exit sequence.
+- **MVVM** – `ViewModels/MonitorViewModel.cs` uses
+  `CommunityToolkit.Mvvm` (`[ObservableProperty]`, `[RelayCommand]`).
+- **Testable core** – formatting, bandwidth math and settings (de)serialization are
+  pure and covered by `tests/SpeedMonitor.Tests`.
+- **CI/CD** – `.github/workflows/ci.yml` builds, tests and packages the single-file
+  exe on every push, and attaches it to the release on a `v*` tag.
 
 ### Publish the single-file .exe (what users download)
 
@@ -141,24 +164,32 @@ the .NET runtime and every dependency are inside it.
 ## Layout
 
 ```
-App.xaml(.cs)                  startup, license gate, single-instance signal, tray wiring, exit
-LicenseWindow.xaml(.cs)        activation dialog (key entry + "email me a key")
-TaskbarWindow.xaml(.cs)        the overlay: placement, z-order, theme sampling
-Services/TaskbarMenu.cs        the shared settings menu (WinForms, hosts in tray)
-Services/TaskbarLocator.cs     finds the taskbar + notification area rectangles
-Services/TrayIconService.cs    notification-area icon + tooltip
-Services/AppSettings.cs        JSON settings + autostart registry
-Services/LicenseService.cs     activation, offline Ed25519 token check, re-check, device id
-Services/SelfInstall.cs        optional install / uninstall (shortcut + Apps entry)
-Services/NativeMethods.cs      Win32 interop (SetWindowPos, styles, enumeration)
-ViewModels/MonitorViewModel.cs formats the readout texts for the bindings
-Metrics/MetricsSampler.cs      1 Hz sampling loop over performance counters
-Metrics/SpeedFormat.cs         unit formatting (Auto / KB / Mbps)
-Metrics/Sample.cs              one reading
+App.xaml(.cs)                    process entry: command line, single instance, license gate
+LicenseWindow.xaml(.cs)          activation dialog (key entry + "email me a key")
+TaskbarWindow.xaml(.cs)          the overlay: placement, z-order, theme, Win11 fallback
+Services/CompositionRoot.cs      DI container (service lifetimes + wiring)
+Services/AppController.cs        runtime wiring: sampler -> view model -> tray, and exit
+Services/TaskbarMenu.cs          the shared settings menu (WinForms, hosts in tray)
+Services/TaskbarLocator.cs       finds the taskbar + notification area (defensive)
+Services/TrayIconService.cs      notification-area icon + tooltip
+Services/AppSettings.cs          JSON settings (ToJson/FromJson) + autostart registry
+Services/ILicenseService.cs      licensing contract used by the app and tests
+Services/LicenseService.cs       activation, offline Ed25519 token check, re-check, device id
+Services/LicenseDialogService.cs creates licensing dialogs on demand
+Services/SelfInstall.cs          optional install / uninstall (shortcut + Apps entry)
+Services/NativeMethods.cs        Win32 interop + safe (non-throwing) wrappers
+ViewModels/MonitorViewModel.cs   source-generated observable readout texts
+Metrics/MetricsSampler.cs        1 Hz PeriodicTimer sampling loop
+Metrics/BandwidthMath.cs         pure conversions (Mbps, percentages)
+Metrics/SpeedFormat.cs           unit formatting (Auto / KB / Mbps)
+Metrics/Sample.cs                one immutable reading (readonly record struct)
+tests/SpeedMonitor.Tests/        xUnit tests for formatting, math, settings, view model
+.github/workflows/ci.yml         build + test + package + release automation
 ```
 
-The earlier v1.0 implementation (window + settings dialog) is preserved in
-`legacy/` together with its solution and old release binary.
+The earlier v1.0 implementation is preserved in `legacy/` with its own solution.
+It is intentionally **not** part of `SpeedMonitor.sln`, and its old release binary is
+no longer tracked by Git (see `legacy/README.md`).
 
 ## Troubleshooting
 
