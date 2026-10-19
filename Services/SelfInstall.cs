@@ -116,6 +116,8 @@ public static class SelfInstall
                         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                         "SpeedMonitor");
                     if (File.Exists(AppSettings.FilePath)) File.Delete(AppSettings.FilePath);
+                    if (File.Exists(LicenseService.StorePath)) File.Delete(LicenseService.StorePath);
+                    if (File.Exists(LicenseService.DeviceIdPath)) File.Delete(LicenseService.DeviceIdPath);
                     if (Directory.Exists(settings) && !Directory.EnumerateFileSystemEntries(settings).Any())
                         Directory.Delete(settings, recursive: false);
                 }

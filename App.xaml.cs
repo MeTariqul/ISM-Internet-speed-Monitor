@@ -19,6 +19,7 @@ public partial class App : System.Windows.Application
     private bool _exiting;
 
     public AppSettings Settings { get; } = AppSettings.Load();
+    public LicenseService License { get; } = new();
     public MetricsSampler Sampler { get; private set; } = null!;
     public MonitorViewModel ViewModel { get; private set; } = null!;
 
@@ -54,6 +55,13 @@ public partial class App : System.Windows.Application
 
         DispatcherUnhandledException += OnDispatcherUnhandledException;
 
+        // Hard block: no valid license, no monitor. /install and /uninstall still work above.
+        if (!EnsureLicensed())
+        {
+            Shutdown();
+            return;
+        }
+
         Sampler = new MetricsSampler(Settings.Adapter);
         ViewModel = new MonitorViewModel(Settings);
         Sampler.Sampled += OnSampled;
@@ -64,6 +72,7 @@ public partial class App : System.Windows.Application
             ViewModel,
             setAdapter: adapter => Sampler.SetAdapter(adapter),
             applyTextVisibility: visible => _window?.SetOverlayVisible(visible),
+            openLicense: ShowLicense,
             exit: ExitApp);
 
         _window = new TaskbarWindow(ViewModel, _menu, Settings.ShowTaskbarText);
@@ -90,6 +99,49 @@ public partial class App : System.Windows.Application
     {
         _menu?.ShowAt(System.Windows.Forms.Cursor.Position);
     }
+
+    /// <summary>
+    /// Returns true when the app may run. The stored token is verified offline; when the token
+    /// asks for it (or the app was never activated) the server is consulted or the activation
+    /// dialog is shown. Cancelling the dialog means exit.
+    /// </summary>
+    private bool EnsureLicensed()
+    {
+        LicenseResult offline = License.ValidateOffline();
+
+        if (offline.Ok && License.NeedsRecheck)
+        {
+            // Off the UI thread so the awaits cannot dead-lock the starter; this only runs
+            // when the token's re-check time has passed.
+            LicenseResult online;
+            try
+            {
+                online = Task.Run(() => License.VerifyAsync()).GetAwaiter().GetResult();
+            }
+            catch
+            {
+                // Treat an unexpected client failure like a network outage: keep the offline token.
+                online = LicenseResult.Fail("Could not re-check the license.", networkFailure: true);
+            }
+
+            if (!online.Ok && !online.NetworkFailure)
+            {
+                // Suspended, expired, revoked or device removed: the token is already dropped.
+                offline = online;
+            }
+            else if (online.Ok)
+            {
+                offline = License.ValidateOffline();
+            }
+            // On a network failure the still-valid offline token is kept and startup continues.
+        }
+
+        if (offline.Ok) return true;
+
+        return new LicenseWindow(License, offline.Error).ShowDialog() == true;
+    }
+
+    private void ShowLicense() => new LicenseWindow(License).ShowDialog();
 
     /// <summary>Handles /install, /uninstall and /help. Returns true when the args were a command.</summary>
     private bool HandleCommandLine(string[] args)

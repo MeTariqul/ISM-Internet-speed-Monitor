@@ -1,0 +1,106 @@
+<Window x:Class="SpeedMonitor.LicenseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ISM - License"
+        Width="500"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        ShowInTaskbar="True"
+        Background="#FFF7F8FA"
+        FontFamily="Segoe UI"
+        FontSize="13">
+
+    <Border Padding="26,24,26,22">
+        <StackPanel>
+            <TextBlock Text="Activate ISM"
+                       FontSize="22"
+                       FontWeight="SemiBold"
+                       Foreground="#FF16181D" />
+
+            <TextBlock x:Name="IntroText"
+                       Margin="0,7,0,0"
+                       TextWrapping="Wrap"
+                       LineHeight="19"
+                       Foreground="#FF5A616B"
+                       Text="Enter your license key. It is tied to this PC and keeps working offline for 7 days at a time." />
+
+            <TextBlock Margin="0,20,0,6"
+                       Text="License key"
+                       FontWeight="SemiBold"
+                       Foreground="#FF2A2F36" />
+
+            <TextBox x:Name="KeyBox"
+                     Height="34"
+                     Padding="8,0"
+                     VerticalContentAlignment="Center"
+                     FontFamily="Consolas"
+                     FontSize="13"
+                     SpellCheck.IsEnabled="False"
+                     TextChanged="KeyBox_TextChanged" />
+
+            <TextBlock x:Name="StatusText"
+                       Margin="0,10,0,0"
+                       TextWrapping="Wrap"
+                       LineHeight="18"
+                       Visibility="Collapsed" />
+
+            <StackPanel Margin="0,18,0,0"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+                <Button x:Name="QuitButton"
+                        Content="Quit"
+                        MinWidth="86"
+                        Height="32"
+                        Margin="0,0,8,0"
+                        IsCancel="True" />
+                <Button x:Name="ActivateButton"
+                        Content="Activate"
+                        MinWidth="96"
+                        Height="32"
+                        IsDefault="True"
+                        Click="Activate_Click" />
+            </StackPanel>
+
+            <Separator Margin="0,22,0,18" />
+
+            <TextBlock Text="Don't have a key?"
+                       FontWeight="SemiBold"
+                       Foreground="#FF2A2F36" />
+
+            <TextBlock Margin="0,5,0,10"
+                       TextWrapping="Wrap"
+                       Foreground="#FF5A616B"
+                       Text="Enter your email and we'll send a single-device key to this address." />
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="EmailBox"
+                         Grid.Column="0"
+                         Height="32"
+                         Padding="8,0"
+                         VerticalContentAlignment="Center"
+                         SpellCheck.IsEnabled="False"
+                         KeyDown="EmailBox_KeyDown" />
+
+                <Button x:Name="RequestButton"
+                        Grid.Column="1"
+                        Content="Email me a key"
+                        MinWidth="120"
+                        Height="32"
+                        Margin="8,0,0,0"
+                        Click="Request_Click" />
+            </Grid>
+
+            <TextBlock Margin="0,16,0,0"
+                       TextWrapping="Wrap"
+                       FontSize="11.5"
+                       Foreground="#FF7A828C"
+                       Text="The key is checked offline at every launch. The app re-checks with the license server when the token asks for it." />
+        </StackPanel>
+    </Border>
+</Window>

@@ -16,12 +16,13 @@ double-click it, or install it properly in one click from the menu (see
 
 ## Download
 
-**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.2.0/ISM-Internet-Speed-Monitor.exe)** (68 MB, single file)
+**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.3.0/ISM-Internet-Speed-Monitor.exe)** (71 MB, single file)
 
 Or grab it from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
 page, then double-click it — nothing else to install. The .NET runtime and every
 dependency are baked in (self-contained, single file), so it works on any 64-bit
-Windows 10/11 without the .NET runtime.
+Windows 10/11 without the .NET runtime. A license key is required; the first launch
+offers to email one to you (see *Licensing*).
 
 ## What it shows
 
@@ -81,6 +82,26 @@ Double-clicking the exe runs it **portable** — nothing is written outside
 
 Both switches accept `/quiet` for a silent, dialog-free run.
 
+## Licensing
+
+ISM needs a license key. On first launch the activation window asks for one (or emails
+a single-device key to your address), and the app will not start until a key is active.
+
+- **Activation is online once** against `metariqul.vercel.app`. The server returns an
+  **Ed25519-signed token** bound to this PC's `MachineGuid`.
+- **Every later launch is offline**: the token's signature, device id and expiry are
+  checked locally - no network needed.
+- **Re-check happens only when the token asks for it** (every 7 days, or sooner if the
+  license expires first). That is when suspension, expiry or removal of this device
+  takes effect. If the machine is offline at that moment the still-valid token keeps
+  working until its expiry.
+- **Menu → License...** shows the current state and lets you replace the key.
+- The key and token are stored in `%AppData%\SpeedMonitor\license.json` and are removed
+  by the uninstaller along with your settings.
+
+`/install` and `/uninstall` still work without a license. The app key and offline
+verification key live in `Services/LicenseService.cs`.
+
 ## Data sources
 
 All readings come from Windows performance counters
@@ -110,7 +131,8 @@ dotnet folder.
 
 ```powershell
 dotnet publish -c Release -r win-x64 --self-contained true `
-  -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+  -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
+  -p:EnableCompressionInSingleFile=true -o publish
 ```
 
 `publish\ISM-Internet-Speed-Monitor.exe` is the one and only file users need —
@@ -119,12 +141,14 @@ the .NET runtime and every dependency are inside it.
 ## Layout
 
 ```
-App.xaml(.cs)                  startup, single-instance signal, tray wiring, exit
+App.xaml(.cs)                  startup, license gate, single-instance signal, tray wiring, exit
+LicenseWindow.xaml(.cs)        activation dialog (key entry + "email me a key")
 TaskbarWindow.xaml(.cs)        the overlay: placement, z-order, theme sampling
 Services/TaskbarMenu.cs        the shared settings menu (WinForms, hosts in tray)
 Services/TaskbarLocator.cs     finds the taskbar + notification area rectangles
 Services/TrayIconService.cs    notification-area icon + tooltip
 Services/AppSettings.cs        JSON settings + autostart registry
+Services/LicenseService.cs     activation, offline Ed25519 token check, re-check, device id
 Services/SelfInstall.cs        optional install / uninstall (shortcut + Apps entry)
 Services/NativeMethods.cs      Win32 interop (SetWindowPos, styles, enumeration)
 ViewModels/MonitorViewModel.cs formats the readout texts for the bindings

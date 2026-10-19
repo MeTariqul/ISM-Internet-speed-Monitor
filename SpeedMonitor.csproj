@@ -12,7 +12,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyTitle>ISM - Internet Speed Monitor</AssemblyTitle>
     <Product>ISM - Internet Speed Monitor</Product>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
     <Authors>MeTariqul</Authors>
     <Company>MeTariqul</Company>
     <Copyright>Copyright (c) MeTariqul - github.com/MeTariqul</Copyright>
@@ -40,6 +40,8 @@
 
   <ItemGroup>
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
+    <!-- Ed25519 verification for offline license tokens (.NET 8 has no built-in Ed25519 API). -->
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.7.0" />
   </ItemGroup>
 
 </Project>
