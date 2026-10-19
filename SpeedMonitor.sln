@@ -5,6 +5,10 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpeedMonitor", "SpeedMonitor.csproj", "{EA1E5E34-E90D-4FD1-99A1-5C4E6A432041}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{45EF420D-D421-4FD1-8B70-4D8E065FB094}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpeedMonitor.Tests", "tests\SpeedMonitor.Tests\SpeedMonitor.Tests.csproj", "{3C2755E1-7AC4-4676-A452-B5B3AB97E15F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,12 @@ Global
 		{EA1E5E34-E90D-4FD1-99A1-5C4E6A432041}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA1E5E34-E90D-4FD1-99A1-5C4E6A432041}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA1E5E34-E90D-4FD1-99A1-5C4E6A432041}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C2755E1-7AC4-4676-A452-B5B3AB97E15F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C2755E1-7AC4-4676-A452-B5B3AB97E15F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C2755E1-7AC4-4676-A452-B5B3AB97E15F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C2755E1-7AC4-4676-A452-B5B3AB97E15F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3C2755E1-7AC4-4676-A452-B5B3AB97E15F} = {45EF420D-D421-4FD1-8B70-4D8E065FB094}
 	EndGlobalSection
 EndGlobal
