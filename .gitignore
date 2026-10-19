@@ -1,41 +1,82 @@
+# ---------------------------------------------------------------------------
 # Build outputs
-bin/
-obj/
+# ---------------------------------------------------------------------------
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+arm64/
+artifacts/
 publish/
-publish-installer/
-publish-small/
-releases/
+publish-*/
+*.deps.json
+*.runtimeconfig.json
 
-# User-specific files
+# ---------------------------------------------------------------------------
+# Test / coverage output
+# ---------------------------------------------------------------------------
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+coverage/
+coverage.*
+*.testsettings
+
+# ---------------------------------------------------------------------------
+# Visual Studio / Rider / VS Code user state
+# ---------------------------------------------------------------------------
+.vs/
+.vscode/
+.idea/
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
-
-# Visual Studio files
-.vs/
 *.rsuser
-*.unsuccessfulbuild
-*.log
+*.DotSettings.user
+_ReSharper*/
+*.VC.db
+*.VC.VC.opendb
+*.pubxml
+*.pubxml.user
+*.publishproj
 
-# NuGet
+# ---------------------------------------------------------------------------
+# NuGet / MSBuild
+# ---------------------------------------------------------------------------
 *.nupkg
+*.snupkg
 packages/
 project.lock.json
+project.assets.json
+*.binlog
+*.cache
 
-# IDE
-.idea/
-.vscode/
-*.swp
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Build artifacts
+# ---------------------------------------------------------------------------
+# Binaries - build output only, never committed
+# ---------------------------------------------------------------------------
 *.exe
 *.dll
 *.pdb
+*.mdb
+*.ilk
+*.exp
+*.lib
+*.obj
+*.msi
+*.zip
 
-# Icon (keep this one)
-!InternetSpeedMonitor/ISM.ico
+# ---------------------------------------------------------------------------
+# OS junk
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------------------------------------------------------------------------
+# Logs
+# ---------------------------------------------------------------------------
+*.log
