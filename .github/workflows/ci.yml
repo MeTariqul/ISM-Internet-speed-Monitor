@@ -84,11 +84,23 @@ jobs:
           -p:DebugType=none
           -o artifacts/publish
 
-      - name: Upload exe
+      - name: Package zip and checksums
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/release | Out-Null
+          Copy-Item artifacts/publish/ISM-Internet-Speed-Monitor.exe artifacts/release/
+          Compress-Archive -Path artifacts/release/ISM-Internet-Speed-Monitor.exe `
+            -DestinationPath artifacts/release/ISM-Internet-Speed-Monitor-win-x64.zip -Force
+          Get-FileHash artifacts/release/* -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLower())  $(Split-Path $_.Path -Leaf)" } |
+            Set-Content artifacts/release/SHA256SUMS.txt
+          Get-Content artifacts/release/SHA256SUMS.txt
+
+      - name: Upload packages
         uses: actions/upload-artifact@v4
         with:
           name: ISM-Internet-Speed-Monitor
-          path: artifacts/publish/ISM-Internet-Speed-Monitor.exe
+          path: artifacts/release/*
 
   release:
     name: Attach asset to release
@@ -100,7 +112,7 @@ jobs:
       contents: write
 
     steps:
-      - name: Download exe
+      - name: Download packages
         uses: actions/download-artifact@v4
         with:
           name: ISM-Internet-Speed-Monitor
@@ -109,5 +121,8 @@ jobs:
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          files: release/ISM-Internet-Speed-Monitor.exe
+          files: |
+            release/ISM-Internet-Speed-Monitor.exe
+            release/ISM-Internet-Speed-Monitor-win-x64.zip
+            release/SHA256SUMS.txt
           generate_release_notes: true

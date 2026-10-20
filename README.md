@@ -18,13 +18,42 @@ double-click it, or install it properly in one click from the menu (see
 
 ## Download
 
-**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.3/ISM-Internet-Speed-Monitor.exe)** (71 MB, single file)
+**⬇ [Download ISM-Internet-Speed-Monitor-win-x64.zip](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.3/ISM-Internet-Speed-Monitor-win-x64.zip)** (71 MB) — unzip it, then double-click the exe inside.
 
-Or grab it from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
+Prefer the raw executable? **[ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.3/ISM-Internet-Speed-Monitor.exe)** — same build, no unzip step.
+
+Checksums: **[SHA256SUMS.txt](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.3/SHA256SUMS.txt)**
+
+Or grab anything from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
 page, then double-click it — nothing else to install. The .NET runtime and every
 dependency are baked in (self-contained, single file), so it works on any 64-bit
 Windows 10/11 without the .NET runtime. A license key is required; the first launch
 offers to email one to you (see *Licensing*).
+
+### Browser says the download is dangerous?
+
+The exe is new, unsigned and 71 MB, so browsers and Windows SmartScreen hold it back
+until enough people have downloaded it. The file is safe — these steps get it through:
+
+- **Chrome / Edge** — open Downloads (`Ctrl+J`), click the arrow next to the file, then
+  **Keep**. In Edge: **… → Keep anyway** (or **Show more → Keep**).
+- **Firefox** — in the download panel, choose **Allow download**.
+- **"Windows protected your PC" after launching** — click **More info**, then
+  **Run anyway**.
+- **Corporate / school network** — some proxies refuse `.exe` files from unknown hosts.
+  Use the **.zip** above instead; it contains the exact same executable.
+- **Antivirus flag** — self-contained .NET single-file exes are a common false positive.
+  Restore it from quarantine, or add an exclusion for the folder you keep ISM in.
+
+Verify the file after downloading:
+
+```powershell
+Get-FileHash .\ISM-Internet-Speed-Monitor.exe -Algorithm SHA256
+```
+
+Compare the output with `SHA256SUMS.txt`. If it matches, the bytes are exactly the
+ones CI built from this repository.
+
 
 ## What's new in 1.4.3
 
