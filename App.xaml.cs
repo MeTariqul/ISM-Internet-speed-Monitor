@@ -43,6 +43,9 @@ public partial class App : System.Windows.Application
             return;
         }
 
+        // A previous self-update may have left the renamed exe or a staged download behind.
+        UpdateApplier.CleanupLeftovers();
+
         ThreadPool.RegisterWaitForSingleObject(
             _showSignal,
             (_, _) => Dispatcher.BeginInvoke(new Action(() => _controller?.ShowMenu())),

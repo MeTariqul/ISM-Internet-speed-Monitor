@@ -17,6 +17,7 @@ public static class CompositionRoot
         services.AddSingleton(_ => AppSettings.Load());
         services.AddSingleton<ILicenseService, LicenseService>();
         services.AddSingleton<LicenseDialogService>();
+        services.AddSingleton(_ => new UpdateService());
 
         services.AddSingleton(sp => new MetricsSampler(sp.GetRequiredService<AppSettings>().Adapter));
         services.AddSingleton<MonitorViewModel>();
@@ -33,7 +34,8 @@ public static class CompositionRoot
             sp.GetRequiredService<MetricsSampler>(),
             sp.GetRequiredService<LicenseDialogService>(),
             visible => sp.GetRequiredService<TaskbarWindow>().SetOverlayVisible(visible),
-            () => sp.GetRequiredService<AppController>().Exit()));
+            () => sp.GetRequiredService<AppController>().Exit(),
+            () => sp.GetRequiredService<AppController>().CheckForUpdatesManually()));
 
         services.AddSingleton(sp => new TrayIconService(
             sp.GetRequiredService<TaskbarMenu>().Menu,

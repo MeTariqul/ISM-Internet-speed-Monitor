@@ -16,6 +16,7 @@ public sealed class AppSettingsTests
         Assert.False(settings.ShowSystem);
         Assert.False(settings.StartWithWindows);
         Assert.Null(settings.Adapter);
+        Assert.True(settings.AutoUpdate);
         Assert.Equal(UnitMode.Auto, settings.UnitMode);
     }
 
@@ -30,6 +31,7 @@ public sealed class AppSettingsTests
             TaskbarFormat = "Both",
             ShowSystem = true,
             ShowTaskbarText = false,
+            AutoUpdate = false,
         };
 
         string json = original.ToJson();
@@ -42,6 +44,7 @@ public sealed class AppSettingsTests
         Assert.Equal(original.TaskbarFormat, restored.TaskbarFormat);
         Assert.Equal(original.ShowSystem, restored.ShowSystem);
         Assert.Equal(original.ShowTaskbarText, restored.ShowTaskbarText);
+        Assert.Equal(original.AutoUpdate, restored.AutoUpdate);
     }
 
     [Fact]
@@ -93,6 +96,7 @@ public sealed class AppSettingsTests
         Assert.NotNull(settings);
         Assert.True(settings!.ShowSystem);
         Assert.True(settings.ShowTaskbarText);
+        Assert.True(settings.AutoUpdate);
         Assert.Equal("Network", settings.TaskbarFormat);
     }
 }

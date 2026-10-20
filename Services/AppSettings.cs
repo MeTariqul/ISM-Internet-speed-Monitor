@@ -18,6 +18,9 @@ public sealed class AppSettings
     public bool ShowSystem { get; set; }
     public bool ShowTaskbarText { get; set; } = true;
 
+    /// <summary>Check GitHub for a newer release at every start and install it silently.</summary>
+    public bool AutoUpdate { get; set; } = true;
+
     private const string AutostartValueName = "SpeedMonitor";
 
     private static readonly JsonSerializerOptions JsonOptions = new()

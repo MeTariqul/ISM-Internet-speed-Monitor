@@ -34,6 +34,23 @@ public sealed class TrayIconService : IDisposable
         if (_icon.Text != text) _icon.Text = text;
     }
 
+    /// <summary>Short notification-area balloon (update progress, errors).</summary>
+    public void ShowBalloon(string title, string text, bool warning = false)
+    {
+        try
+        {
+            _icon.ShowBalloonTip(
+                5000,
+                title,
+                text,
+                warning ? WinForms.ToolTipIcon.Warning : WinForms.ToolTipIcon.Info);
+        }
+        catch
+        {
+            // Balloons are a courtesy; the shell can refuse them (focus assist, policy).
+        }
+    }
+
     private static Icon CreateIcon()
     {
         using var bitmap = new Bitmap(32, 32);

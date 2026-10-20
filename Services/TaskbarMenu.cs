@@ -16,10 +16,12 @@ public sealed class TaskbarMenu : IDisposable
     private readonly LicenseDialogService _licenseDialog;
     private readonly Action<bool> _applyTextVisibility;
     private readonly Action _exit;
+    private readonly Action _checkForUpdates;
 
     private readonly WinForms.ContextMenuStrip _menu;
     private readonly WinForms.ToolStripMenuItem _showText;
     private readonly WinForms.ToolStripMenuItem _autostart;
+    private readonly WinForms.ToolStripMenuItem _autoUpdate;
     private readonly WinForms.ToolStripMenuItem _showSystem;
     private readonly WinForms.ToolStripMenuItem _formatNetwork;
     private readonly WinForms.ToolStripMenuItem _formatDisk;
@@ -34,7 +36,8 @@ public sealed class TaskbarMenu : IDisposable
         MetricsSampler sampler,
         LicenseDialogService licenseDialog,
         Action<bool> applyTextVisibility,
-        Action exit)
+        Action exit,
+        Action checkForUpdates)
     {
         _settings = settings;
         _viewModel = viewModel;
@@ -42,6 +45,7 @@ public sealed class TaskbarMenu : IDisposable
         _licenseDialog = licenseDialog;
         _applyTextVisibility = applyTextVisibility;
         _exit = exit;
+        _checkForUpdates = checkForUpdates;
 
         _menu = new WinForms.ContextMenuStrip { ShowImageMargin = true };
         _menu.Opening += (_, _) => Sync();
@@ -49,6 +53,7 @@ public sealed class TaskbarMenu : IDisposable
 
         _showText = MakeItem("Show text in taskbar", ShowText_Click, checkable: true);
         _autostart = MakeItem("Start with Windows", Autostart_Click, checkable: true);
+        _autoUpdate = MakeItem("Update automatically", AutoUpdate_Click, checkable: true);
 
         var format = new WinForms.ToolStripMenuItem("Taskbar text");
         _formatNetwork = MakeItem("Network (up / down)", FormatNetwork_Click, checkable: true);
@@ -87,6 +92,9 @@ public sealed class TaskbarMenu : IDisposable
         _menu.Items.Add(new WinForms.ToolStripSeparator());
         _menu.Items.Add(units);
         _menu.Items.Add(_adapters);
+        _menu.Items.Add(new WinForms.ToolStripSeparator());
+        _menu.Items.Add(_autoUpdate);
+        _menu.Items.Add(MakeItem("Check for updates...", (_, _) => _checkForUpdates(), checkable: false));
         _menu.Items.Add(new WinForms.ToolStripSeparator());
         _menu.Items.Add(_installItem);
         _menu.Items.Add(MakeItem("License...", (_, _) => _licenseDialog.ShowLicense(), checkable: false));
@@ -153,6 +161,7 @@ public sealed class TaskbarMenu : IDisposable
     {
         _showText.Checked = _settings.ShowTaskbarText;
         _autostart.Checked = AppSettings.IsAutostartEnabled();
+        _autoUpdate.Checked = _settings.AutoUpdate;
         _showSystem.Checked = _settings.ShowSystem;
         _formatNetwork.Checked = string.Equals(_settings.TaskbarFormat, "Network", StringComparison.Ordinal);
         _formatDisk.Checked = string.Equals(_settings.TaskbarFormat, "Disk", StringComparison.Ordinal);
@@ -221,6 +230,12 @@ public sealed class TaskbarMenu : IDisposable
     {
         _settings.ShowSystem = _showSystem.Checked;
         _viewModel.Refresh();
+        SaveNow();
+    }
+
+    private void AutoUpdate_Click(object? sender, EventArgs e)
+    {
+        _settings.AutoUpdate = _autoUpdate.Checked;
         SaveNow();
     }
 

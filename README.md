@@ -18,11 +18,11 @@ double-click it, or install it properly in one click from the menu (see
 
 ## Download
 
-**⬇ [Download ISM-Internet-Speed-Monitor-win-x64.zip](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.3/ISM-Internet-Speed-Monitor-win-x64.zip)** (71 MB) — unzip it, then double-click the exe inside.
+**⬇ [Download ISM-Internet-Speed-Monitor-win-x64.zip](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.0/ISM-Internet-Speed-Monitor-win-x64.zip)** (71 MB) — unzip it, then double-click the exe inside.
 
-Prefer the raw executable? **[ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.3/ISM-Internet-Speed-Monitor.exe)** — same build, no unzip step.
+Prefer the raw executable? **[ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.0/ISM-Internet-Speed-Monitor.exe)** — same build, no unzip step.
 
-Checksums: **[SHA256SUMS.txt](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.3/SHA256SUMS.txt)**
+Checksums: **[SHA256SUMS.txt](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.0/SHA256SUMS.txt)**
 
 Or grab anything from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
 page, then double-click it — nothing else to install. The .NET runtime and every
@@ -54,6 +54,18 @@ Get-FileHash .\ISM-Internet-Speed-Monitor.exe -Algorithm SHA256
 Compare the output with `SHA256SUMS.txt`. If it matches, the bytes are exactly the
 ones CI built from this repository.
 
+
+## What's new in 1.5.0
+
+- **Updates itself on startup** – every launch asks GitHub for the latest release.
+  When a newer build exists it is downloaded in the background, verified against the
+  release's SHA-256, swapped in and ISM restarts on the new version. No browser, no
+  SmartScreen prompt, no manual download.
+- **Opt out any time** – tray menu → **Update automatically** turns the startup check
+  off. **Check for updates…** asks first and reports the result either way.
+- **Safe by design** – the download only replaces the running exe after its checksum
+  matches `SHA256SUMS.txt`; an offline or failed check leaves the current version
+  untouched, and development builds never self-update.
 
 ## What's new in 1.4.3
 
