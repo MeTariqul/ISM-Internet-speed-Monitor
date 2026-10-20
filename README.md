@@ -18,13 +18,20 @@ double-click it, or install it properly in one click from the menu (see
 
 ## Download
 
-**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.1/ISM-Internet-Speed-Monitor.exe)** (71 MB, single file)
+**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.2/ISM-Internet-Speed-Monitor.exe)** (71 MB, single file)
 
 Or grab it from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
 page, then double-click it — nothing else to install. The .NET runtime and every
 dependency are baked in (self-contained, single file), so it works on any 64-bit
 Windows 10/11 without the .NET runtime. A license key is required; the first launch
 offers to email one to you (see *Licensing*).
+
+## What's new in 1.4.2
+
+- **The taskbar readout is decoration only** – clicking it no longer opens the
+  settings menu. The overlay is now click-through (`WS_EX_TRANSPARENT`), so
+  clicks land on the taskbar underneath instead of being swallowed. Open the
+  menu from the tray icon.
 
 ## What's new in 1.4.1
 
@@ -70,13 +77,14 @@ With *Also show CPU / RAM* enabled, `CPU 12%  RAM 68%` is appended.
 - **Reads on any theme** – the taskbar background is sampled and the text
   switches between light (with a soft shadow) and dark automatically.
 - **Never steals focus** – `WS_EX_NOACTIVATE` plus per-tick z-order
-  re-assertion, so the taskbar lifting itself on click can't bury the readout
-  and clicking it never minimises your application.
+  re-assertion, so the taskbar lifting itself on click can't bury the readout.
+  The readout is click-through (`WS_EX_TRANSPARENT`): clicks land on the
+  taskbar underneath, exactly as if it were not there.
 - **Survives a missing taskbar** – if Windows 11 replaces or hides the shell
   taskbar (Explorer restart, docking failure), the readout falls back to a
   floating widget at the bottom-right of the work area instead of disappearing
   or crashing. Every Win32 call is wrapped in a safe helper.
-- **Click or right-click the readout** (or the tray icon) for the settings menu:
+- **Click the tray icon** for the settings menu:
   - show/hide the taskbar text
   - text format (network / disk / both) and *Also show CPU / RAM*
   - network units: Auto (B/KB/MB), KB/s, Mbps
@@ -85,7 +93,7 @@ With *Also show CPU / RAM* enabled, `CPU 12%  RAM 68%` is appended.
   - *Start with Windows* (HKCU `Run` key)
   - *Install ISM…* / *Uninstall ISM…* (optional, per-user — see below)
   - exit
-- **Tray icon** – live speeds in the tooltip; left/right click opens the same
+- **Tray icon** – live speeds in the tooltip; click opens the same
   menu.
 - **Settings persistence** – units, format, adapter, visibility and autostart
   are written to `%AppData%\SpeedMonitor\settings.json` **immediately, on every

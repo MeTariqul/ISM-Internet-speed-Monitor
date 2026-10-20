@@ -39,8 +39,6 @@ public sealed class AppController
         _window = window;
         _tray = tray;
         _dispatcher = dispatcher;
-
-        _window.MenuRequested += (_, _) => ShowMenu();
     }
 
     /// <summary>Starts sampling and shows the overlay. Must be called on the UI thread.</summary>

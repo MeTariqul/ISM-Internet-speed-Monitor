@@ -1,5 +1,4 @@
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
@@ -35,9 +34,6 @@ public partial class TaskbarWindow : Window
     private bool _darkTextOnLightBar;
     private bool _repositioning;
 
-    /// <summary>Raised when the overlay is clicked; the controller decides which menu to show.</summary>
-    public event EventHandler? MenuRequested;
-
     public TaskbarWindow(MonitorViewModel viewModel, bool initiallyVisible)
     {
         _viewModel = viewModel;
@@ -49,7 +45,7 @@ public partial class TaskbarWindow : Window
         SourceInitialized += (_, _) =>
         {
             _hwnd = new WindowInteropHelper(this).Handle;
-            PreventActivation(_hwnd);
+            MakeClickThrough(_hwnd);
             Reposition();
         };
         SizeChanged += (_, _) => Reposition();
@@ -70,27 +66,6 @@ public partial class TaskbarWindow : Window
     {
         _userWantsVisible = visible;
         Reposition();
-    }
-
-    private void Overlay_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-    {
-        e.Handled = true;
-        OpenMenu();
-    }
-
-    private void Overlay_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
-    {
-        e.Handled = true;
-        OpenMenu();
-    }
-
-    private void OpenMenu()
-    {
-        // Show after the current mouse message is fully processed; showing a WinForms
-        // menu synchronously from inside a WPF MouseUp handler makes it close instantly.
-        Dispatcher.BeginInvoke(
-            new Action(() => MenuRequested?.Invoke(this, EventArgs.Empty)),
-            DispatcherPriority.Background);
     }
 
     // ---------------------------------------------------------------- placement
@@ -315,18 +290,20 @@ public partial class TaskbarWindow : Window
     }
 
     /// <summary>
-    /// WS_EX_NOACTIVATE: clicking the readout must never steal focus from the application
-    /// the user is working in (WPF's ShowActivated only covers the initial Show).
+    /// WS_EX_NOACTIVATE + WS_EX_TRANSPARENT: the readout is decoration, not a control. Clicks
+    /// pass straight through to whatever is underneath and never steal focus from the app the
+    /// user is working in (WPF's ShowActivated only covers the initial Show).
     /// </summary>
-    private static void PreventActivation(IntPtr hwnd)
+    private static void MakeClickThrough(IntPtr hwnd)
     {
         const int GwlExStyle = -20;
+        const int WsExTransparent = 0x00000020;
         const int WsExNoActivate = 0x08000000;
 
         try
         {
             int style = NativeMethods.TryGetWindowLong(hwnd, GwlExStyle);
-            NativeMethods.TrySetWindowLong(hwnd, GwlExStyle, style | WsExNoActivate);
+            NativeMethods.TrySetWindowLong(hwnd, GwlExStyle, style | WsExTransparent | WsExNoActivate);
         }
         catch
         {

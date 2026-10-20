@@ -13,13 +13,11 @@
         Topmost="True"
         Focusable="False"
         UseLayoutRounding="True"
-        SnapsToDevicePixels="True"
-        MouseLeftButtonUp="Overlay_MouseLeftButtonUp"
-        MouseRightButtonUp="Overlay_MouseRightButtonUp">
+        SnapsToDevicePixels="True">
 
-    <!-- Alpha 1 background: invisible to the eye, but stops Windows from treating the
-         transparent pixels as click-through so the overlay can open its menu. -->
-    <Border Padding="10,0" Background="#01000000">
+    <!-- The window is click-through (see MakeClickThrough), so the taskbar underneath keeps
+         receiving every click; the readout is pure decoration. -->
+    <Border Padding="10,0" Background="Transparent">
         <TextBlock x:Name="ValueText"
                    Text="{Binding TaskbarText}"
                    FontSize="12.5"
