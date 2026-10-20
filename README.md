@@ -18,13 +18,20 @@ double-click it, or install it properly in one click from the menu (see
 
 ## Download
 
-**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.2/ISM-Internet-Speed-Monitor.exe)** (71 MB, single file)
+**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.3/ISM-Internet-Speed-Monitor.exe)** (71 MB, single file)
 
 Or grab it from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
 page, then double-click it — nothing else to install. The .NET runtime and every
 dependency are baked in (self-contained, single file), so it works on any 64-bit
 Windows 10/11 without the .NET runtime. A license key is required; the first launch
 offers to email one to you (see *Licensing*).
+
+## What's new in 1.4.3
+
+- **Hides in full screen** – when a video, game, presentation or any other window
+  covers the monitor, the taskbar readout disappears; it comes back automatically
+  as soon as you leave full screen. Detection uses the visible DWM frame, so a
+  normally maximised window does not trigger it.
 
 ## What's new in 1.4.2
 
@@ -80,6 +87,9 @@ With *Also show CPU / RAM* enabled, `CPU 12%  RAM 68%` is appended.
   re-assertion, so the taskbar lifting itself on click can't bury the readout.
   The readout is click-through (`WS_EX_TRANSPARENT`): clicks land on the
   taskbar underneath, exactly as if it were not there.
+- **Steps aside in full screen** – when a video, game or presentation covers the
+  whole monitor, the readout hides and returns when full screen ends. A
+  normally maximised window is not affected.
 - **Survives a missing taskbar** – if Windows 11 replaces or hides the shell
   taskbar (Explorer restart, docking failure), the readout falls back to a
   floating widget at the bottom-right of the work area instead of disappearing

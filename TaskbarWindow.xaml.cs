@@ -33,6 +33,7 @@ public partial class TaskbarWindow : Window
     private DateTime _lastThemeSample = DateTime.MinValue;
     private bool _darkTextOnLightBar;
     private bool _repositioning;
+    private bool _fullscreen;
 
     public TaskbarWindow(MonitorViewModel viewModel, bool initiallyVisible)
     {
@@ -81,12 +82,15 @@ public partial class TaskbarWindow : Window
                 && NativeMethods.TryIsWindowVisible(taskbar)
                 && IntersectsWithScreen(taskbarRect);
 
+            bool fullscreen = FullscreenDetector.Query(_hwnd) ?? _fullscreen;
+            _fullscreen = fullscreen;
+
             if (_ready)
             {
                 // A missing shell window (Explorer restart, Windows 11 docking failure) keeps the
                 // widget alive as a floating widget. A taskbar that exists but is auto-hidden
-                // still hides the overlay with it, as before.
-                ApplyVisible(_userWantsVisible && (taskbarUsable || !taskbarFound));
+                // still hides the overlay with it, as before. A full-screen app hides it too.
+                ApplyVisible(_userWantsVisible && !fullscreen && (taskbarUsable || !taskbarFound));
             }
 
             if (!IsVisible) return;

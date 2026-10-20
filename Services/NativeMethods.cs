@@ -53,6 +53,20 @@ internal static class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool IsWindowVisible(IntPtr hWnd);
 
+    [DllImport("user32.dll")]
+    public static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool IsIconic(IntPtr hWnd);
+
+    [DllImport("dwmapi.dll")]
+    public static extern int DwmGetWindowAttribute(
+        IntPtr hwnd, int dwAttribute, out Rect pvAttribute, int cbAttribute);
+
+    /// <summary>DWMWA_EXTENDED_FRAME_BOUNDS: the visible frame, without the invisible resize border.</summary>
+    private const int DwmwaExtendedFrameBounds = 9;
+
     [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
     public static extern int GetWindowLong(IntPtr hWnd, int nIndex);
 
@@ -103,6 +117,79 @@ internal static class NativeMethods
         {
             return false;
         }
+    }
+
+    public static IntPtr TryGetForegroundWindow()
+    {
+        try
+        {
+            return GetForegroundWindow();
+        }
+        catch
+        {
+            return IntPtr.Zero;
+        }
+    }
+
+    public static bool TryIsIconic(IntPtr hwnd)
+    {
+        if (hwnd == IntPtr.Zero) return false;
+
+        try
+        {
+            return IsIconic(hwnd);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static uint TryGetWindowProcessId(IntPtr hwnd)
+    {
+        if (hwnd == IntPtr.Zero) return 0;
+
+        try
+        {
+            GetWindowThreadProcessId(hwnd, out uint processId);
+            return processId;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// On-screen rectangle of a window's visible frame. DWM's extended frame bounds exclude
+    /// the invisible resize border that makes a maximised window look bigger than the monitor;
+    /// GetWindowRect is used as the fallback when DWM has nothing to say.
+    /// </summary>
+    public static bool TryGetVisibleWindowRect(IntPtr hwnd, out RectPx rect)
+    {
+        rect = default;
+        if (hwnd == IntPtr.Zero) return false;
+
+        try
+        {
+            if (DwmGetWindowAttribute(
+                    hwnd, DwmwaExtendedFrameBounds, out Rect frame, Marshal.SizeOf<Rect>()) == 0
+                && frame.Width > 0
+                && frame.Height > 0)
+            {
+                rect = new RectPx(frame.Left, frame.Top, frame.Right, frame.Bottom);
+                return true;
+            }
+        }
+        catch
+        {
+            // Fall through to GetWindowRect: still correct, just includes the resize border.
+        }
+
+        if (!TryGetWindowRect(hwnd, out Rect fallback)) return false;
+
+        rect = new RectPx(fallback.Left, fallback.Top, fallback.Right, fallback.Bottom);
+        return true;
     }
 
     public static bool TrySetWindowPos(
