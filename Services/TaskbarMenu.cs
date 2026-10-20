@@ -45,6 +45,7 @@ public sealed class TaskbarMenu : IDisposable
 
         _menu = new WinForms.ContextMenuStrip { ShowImageMargin = true };
         _menu.Opening += (_, _) => Sync();
+        KeepOpenOnItemClick(_menu);
 
         _showText = MakeItem("Show text in taskbar", ShowText_Click, checkable: true);
         _autostart = MakeItem("Start with Windows", Autostart_Click, checkable: true);
@@ -55,6 +56,7 @@ public sealed class TaskbarMenu : IDisposable
         _formatBoth = MakeItem("Network + disk", FormatBoth_Click, checkable: true);
         format.DropDownItems.AddRange(
             new WinForms.ToolStripItem[] { _formatNetwork, _formatDisk, _formatBoth });
+        KeepOpenOnItemClick(format.DropDown);
 
         _showSystem = MakeItem("Also show CPU / RAM", ShowSystem_Click, checkable: true);
 
@@ -71,8 +73,10 @@ public sealed class TaskbarMenu : IDisposable
             return item;
         }).ToArray();
         units.DropDownItems.AddRange(_unitItems);
+        KeepOpenOnItemClick(units.DropDown);
 
         _adapters = new WinForms.ToolStripMenuItem("Network adapter");
+        KeepOpenOnItemClick(_adapters.DropDown);
         _installItem = MakeItem("Install ISM...", Install_Click, checkable: false);
 
         _menu.Items.Add(_showText);
@@ -98,14 +102,54 @@ public sealed class TaskbarMenu : IDisposable
         // Opens up and to the left: the overlay always sits on the bottom edge of the screen.
         => _menu.Show(screenPoint, WinForms.ToolStripDropDownDirection.AboveLeft);
 
-    private static WinForms.ToolStripMenuItem MakeItem(string text, EventHandler? onClick, bool checkable)
+    private WinForms.ToolStripMenuItem MakeItem(string text, EventHandler? onClick, bool checkable)
     {
         var item = new WinForms.ToolStripMenuItem(text) { CheckOnClick = checkable };
+
+        // WinForms closes the dropdown *before* raising Click, so a toggle would dismiss the
+        // menu before the handler could react. ItemClicked closes are cancelled in
+        // KeepOpenOnItemClick and ordinary commands close the menu explicitly here instead.
+        if (!checkable) item.Click += (_, _) => _menu.Close();
+
+        // A toggle inside a submenu (units, format, adapter) collapses the submenu but leaves
+        // the root menu open, exactly like the top-level toggles.
+        item.Click += (_, _) =>
+        {
+            if (item.GetCurrentParent() is WinForms.ToolStripDropDown parent
+                && !ReferenceEquals(parent, _menu))
+            {
+                parent.Close();
+            }
+        };
+
         if (onClick is not null) item.Click += onClick;
         return item;
     }
 
+    /// <summary>
+    /// Keeps a dropdown open when an item is clicked. Toggles stay open so several settings can
+    /// be changed in a row; normal commands close the root menu themselves in <see cref="MakeItem"/>.
+    /// Clicking outside the menu, pressing Escape, or choosing Exit still closes it.
+    /// </summary>
+    private static void KeepOpenOnItemClick(WinForms.ToolStripDropDown dropDown)
+    {
+        dropDown.Closing += (_, e) =>
+        {
+            if (e.CloseReason == WinForms.ToolStripDropDownCloseReason.ItemClicked)
+            {
+                e.Cancel = true;
+            }
+        };
+    }
+
     private void Sync()
+    {
+        SyncChecks();
+        RebuildAdapters();
+    }
+
+    /// <summary>Updates check marks without touching the item tree, safe while the menu is open.</summary>
+    private void SyncChecks()
     {
         _showText.Checked = _settings.ShowTaskbarText;
         _autostart.Checked = AppSettings.IsAutostartEnabled();
@@ -121,7 +165,7 @@ public sealed class TaskbarMenu : IDisposable
 
         _installItem.Text = SelfInstall.IsInstalled ? "Uninstall ISM..." : "Install ISM...";
 
-        RebuildAdapters();
+        UpdateAdapterChecks();
     }
 
     private void RebuildAdapters()
@@ -139,6 +183,13 @@ public sealed class TaskbarMenu : IDisposable
             item.Tag = instance;
             _adapters.DropDownItems.Add(item);
         }
+
+        UpdateAdapterChecks();
+    }
+
+    private void UpdateAdapterChecks()
+    {
+        string? selected = _settings.Adapter;
 
         foreach (WinForms.ToolStripItem raw in _adapters.DropDownItems)
         {
@@ -182,7 +233,7 @@ public sealed class TaskbarMenu : IDisposable
     private void SetFormat(string format)
     {
         _settings.TaskbarFormat = format;
-        Sync();
+        SyncChecks();
         _viewModel.Refresh();
         SaveNow();
     }
@@ -197,7 +248,7 @@ public sealed class TaskbarMenu : IDisposable
             "Mbps" => UnitMode.Megabits,
             _ => UnitMode.Auto,
         };
-        Sync();
+        SyncChecks();
         SaveNow();
     }
 
@@ -208,7 +259,7 @@ public sealed class TaskbarMenu : IDisposable
         string? adapter = key.Length == 0 ? null : key;
         _settings.Adapter = adapter;
         _sampler.SetAdapter(adapter);
-        Sync();
+        SyncChecks();
         SaveNow();
     }
 

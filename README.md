@@ -18,13 +18,20 @@ double-click it, or install it properly in one click from the menu (see
 
 ## Download
 
-**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.0/ISM-Internet-Speed-Monitor.exe)** (71 MB, single file)
+**⬇ [Download ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.4.1/ISM-Internet-Speed-Monitor.exe)** (71 MB, single file)
 
 Or grab it from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
 page, then double-click it — nothing else to install. The .NET runtime and every
 dependency are baked in (self-contained, single file), so it works on any 64-bit
 Windows 10/11 without the .NET runtime. A license key is required; the first launch
 offers to email one to you (see *Licensing*).
+
+## What's new in 1.4.1
+
+- **The settings menu stays open** – clicking a toggle (taskbar text, start with
+  Windows, CPU / RAM, taskbar format, units, adapter) no longer dismisses the menu,
+  so several options can be changed in one go. Submenus collapse after a pick, and
+  Exit / Install / License / About still close the menu as before.
 
 ## What's new in 1.4.0
 
