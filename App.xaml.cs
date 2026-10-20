@@ -45,6 +45,7 @@ public partial class App : System.Windows.Application
 
         // A previous self-update may have left the renamed exe or a staged download behind.
         UpdateApplier.CleanupLeftovers();
+        AppSettings.RepairAutostart();
 
         ThreadPool.RegisterWaitForSingleObject(
             _showSignal,

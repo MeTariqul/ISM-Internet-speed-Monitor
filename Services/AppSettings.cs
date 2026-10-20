@@ -128,4 +128,25 @@ public sealed class AppSettings
         }
         catch { /* registry may be locked down */ }
     }
+
+    /// <summary>
+    /// Rewrites an autostart entry that points at an older copy - a leftover download or a
+    /// build folder - so login always starts the installed copy (or the running one when
+    /// nothing is installed). A missing entry, i.e. autostart is off, is left alone.
+    /// </summary>
+    public static void RepairAutostart()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                @"Software\Microsoft\Windows\CurrentVersion\Run", writable: true);
+            if (key?.GetValue(AutostartValueName) is not string current) return;
+
+            string target = SelfInstall.TargetPath;
+            if (string.Equals(current.Trim('"'), target, StringComparison.OrdinalIgnoreCase)) return;
+
+            key.SetValue(AutostartValueName, $"\"{target}\"");
+        }
+        catch { /* registry may be locked down */ }
+    }
 }

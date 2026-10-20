@@ -18,11 +18,11 @@ double-click it, or install it properly in one click from the menu (see
 
 ## Download
 
-**⬇ [Download ISM-Internet-Speed-Monitor-win-x64.zip](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.1/ISM-Internet-Speed-Monitor-win-x64.zip)** (71 MB) — unzip it, then double-click the exe inside.
+**⬇ [Download ISM-Internet-Speed-Monitor-win-x64.zip](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.2/ISM-Internet-Speed-Monitor-win-x64.zip)** (71 MB) — unzip it, then double-click the exe inside.
 
-Prefer the raw executable? **[ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.1/ISM-Internet-Speed-Monitor.exe)** — same build, no unzip step.
+Prefer the raw executable? **[ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.2/ISM-Internet-Speed-Monitor.exe)** — same build, no unzip step.
 
-Checksums: **[SHA256SUMS.txt](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.1/SHA256SUMS.txt)**
+Checksums: **[SHA256SUMS.txt](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.2/SHA256SUMS.txt)**
 
 Or grab anything from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
 page, then double-click it — nothing else to install. The .NET runtime and every
@@ -54,6 +54,12 @@ Get-FileHash .\ISM-Internet-Speed-Monitor.exe -Algorithm SHA256
 Compare the output with `SHA256SUMS.txt`. If it matches, the bytes are exactly the
 ones CI built from this repository.
 
+
+## What's new in 1.5.2
+
+- **Start with Windows follows the current build** – if the login entry points at an older
+  copy (a leftover download or a build folder), ISM rewrites it to the installed copy on
+  the next start, so Windows never resurrects an old version.
 
 ## What's new in 1.5.1
 
