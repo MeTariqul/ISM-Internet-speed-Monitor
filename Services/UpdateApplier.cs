@@ -34,7 +34,11 @@ public static class UpdateApplier
 #endif
     }
 
-    /// <summary>Removes a stale "*.old" / "*.update.exe" left behind by an earlier update.</summary>
+    /// <summary>
+    /// Removes the artifacts a previous update can leave behind - the renamed "*.old" build,
+    /// a staged download and any half-written ".part" file - plus older ISM exes kept in the
+    /// same folder. Old releases stay on GitHub; the device keeps only the running build.
+    /// </summary>
     public static void CleanupLeftovers()
     {
         string? exe = Environment.ProcessPath;
@@ -42,7 +46,60 @@ public static class UpdateApplier
 
         TryDelete(exe + OldSuffix);
         TryDelete(exe + StagedSuffix);
+        TryDelete(exe + StagedSuffix + ".part");
+
+        string? directory = Path.GetDirectoryName(exe);
+        if (directory is not null) RemoveOlderCopies(directory, exe);
     }
+
+    /// <summary>
+    /// Deletes older ISM builds sitting next to the running exe (browser duplicates such as
+    /// "ISM-Internet-Speed-Monitor_2.exe"). Only files with the shipped name prefix, an .exe
+    /// extension and a parsable file version older than this build are touched; renamed or
+    /// version-less files are left alone.
+    /// </summary>
+    private static void RemoveOlderCopies(string directory, string currentExe)
+    {
+        string prefix = Path.GetFileNameWithoutExtension(SelfInstall.AppExeName);
+        Version current = typeof(UpdateApplier).Assembly.GetName().Version ?? new Version(0, 0);
+
+        try
+        {
+            foreach (string file in Directory.EnumerateFiles(directory, prefix + "*.exe"))
+            {
+                if (string.Equals(file, currentExe, StringComparison.OrdinalIgnoreCase)) continue;
+
+                Version? version = ReadFileVersion(file);
+                if (version is null) continue;
+                if (Normalize(version) >= Normalize(current)) continue;
+
+                TryDelete(file);
+            }
+        }
+        catch
+        {
+            // A folder we cannot enumerate is not worth an error at startup.
+        }
+    }
+
+    private static Version? ReadFileVersion(string path)
+    {
+        try
+        {
+            string? text = FileVersionInfo.GetVersionInfo(path).FileVersion;
+            return Version.TryParse(text, out Version? version) ? version : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static Version Normalize(Version version) => new(
+        version.Major,
+        version.Minor,
+        Math.Max(version.Build, 0),
+        Math.Max(version.Revision, 0));
 
     /// <summary>
     /// Swaps <paramref name="stagedExe"/> into the running exe's place and schedules the
@@ -88,6 +145,8 @@ public static class UpdateApplier
         }
         catch (Exception ex)
         {
+            // Never leave a 74 MB staged build behind after a failed swap.
+            TryDelete(stagedExe);
             error = ex.Message;
             return false;
         }

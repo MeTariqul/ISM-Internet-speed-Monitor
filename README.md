@@ -18,11 +18,11 @@ double-click it, or install it properly in one click from the menu (see
 
 ## Download
 
-**⬇ [Download ISM-Internet-Speed-Monitor-win-x64.zip](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.0/ISM-Internet-Speed-Monitor-win-x64.zip)** (71 MB) — unzip it, then double-click the exe inside.
+**⬇ [Download ISM-Internet-Speed-Monitor-win-x64.zip](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.1/ISM-Internet-Speed-Monitor-win-x64.zip)** (71 MB) — unzip it, then double-click the exe inside.
 
-Prefer the raw executable? **[ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.0/ISM-Internet-Speed-Monitor.exe)** — same build, no unzip step.
+Prefer the raw executable? **[ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.1/ISM-Internet-Speed-Monitor.exe)** — same build, no unzip step.
 
-Checksums: **[SHA256SUMS.txt](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.0/SHA256SUMS.txt)**
+Checksums: **[SHA256SUMS.txt](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.1/SHA256SUMS.txt)**
 
 Or grab anything from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
 page, then double-click it — nothing else to install. The .NET runtime and every
@@ -54,6 +54,14 @@ Get-FileHash .\ISM-Internet-Speed-Monitor.exe -Algorithm SHA256
 Compare the output with `SHA256SUMS.txt`. If it matches, the bytes are exactly the
 ones CI built from this repository.
 
+
+## What's new in 1.5.1
+
+- **Only the running build stays on the device** – an update deletes the replaced exe as
+  soon as the new one starts, and every start sweeps the app's folder for leftovers: the
+  renamed `*.old` build, a stalled `*.update.exe` download and older copies of
+  `ISM-Internet-Speed-Monitor*.exe`. Releases stay on GitHub; your disk keeps just the
+  build you are running.
 
 ## What's new in 1.5.0
 
