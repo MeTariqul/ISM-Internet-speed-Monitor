@@ -14,7 +14,7 @@ public sealed class TrayIconService : IDisposable
     {
         _icon = new WinForms.NotifyIcon
         {
-            Icon = CreateIcon(),
+            Icon = LoadLogoIcon(),
             Visible = true,
             Text = "Speed Monitor",
             ContextMenuStrip = menu,
@@ -49,6 +49,26 @@ public sealed class TrayIconService : IDisposable
         {
             // Balloons are a courtesy; the shell can refuse them (focus assist, policy).
         }
+    }
+
+    private static Icon LoadLogoIcon()
+    {
+        try
+        {
+            var info = System.Windows.Application.GetResourceStream(
+                new Uri("pack://application:,,,/Assets/logo.ico"));
+            if (info?.Stream is not null)
+            {
+                using var stream = info.Stream;
+                return new Icon(stream);
+            }
+        }
+        catch
+        {
+            // Fall back to the generated icon if the resource cannot be read.
+        }
+
+        return CreateIcon();
     }
 
     private static Icon CreateIcon()

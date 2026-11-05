@@ -21,6 +21,8 @@ public interface ILicenseService
 
     LicenseResult ValidateOffline();
 
+    void Unregister();
+
     Task<LicenseResult> ActivateAsync(string key);
 
     Task<LicenseResult> VerifyAsync();

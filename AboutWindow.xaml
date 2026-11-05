@@ -1,0 +1,70 @@
+<Window x:Class="SpeedMonitor.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+         Title="About — ISM Internet Speed Monitor"
+         Icon="Assets/logo.ico"
+        Width="480"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow"
+        Background="#FFF7F8FA"
+        FontFamily="Segoe UI"
+        FontSize="13">
+    <Border Padding="28,24,28,24">
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Image Source="Assets/logo.jpg" Width="64" Height="64" Margin="0,0,16,0" />
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="ISM - Internet Speed Monitor"
+                               FontSize="20" FontWeight="SemiBold"
+                               Foreground="#FF16181D" />
+                    <TextBlock x:Name="VersionText"
+                               FontSize="12" Foreground="#FF7A828C"
+                               Margin="0,2,0,0" />
+                </StackPanel>
+            </StackPanel>
+
+            <Separator Margin="0,18,0,14" />
+
+            <TextBlock Text="A DU Meter style live network / disk / CPU / RAM readout drawn inside the Windows taskbar. Painted on the taskbar just to the left of the notification area, it never steals focus and hides in full screen automatically."
+                       TextWrapping="Wrap" LineHeight="19"
+                       Foreground="#FF5A616B" />
+
+            <Grid Margin="0,14,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Author" FontWeight="SemiBold" Foreground="#FF2A2F36" Margin="0,0,12,0" />
+                <TextBlock Grid.Column="1" Text="MeTariqul" Foreground="#FF16181D" />
+            </Grid>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="GitHub" FontWeight="SemiBold" Foreground="#FF2A2F36" Margin="0,0,12,0" />
+                <TextBlock Grid.Column="1" Text="https://github.com/MeTariqul/ISM-Internet-Speed-Monitor"
+                           Foreground="#FF2A2F36" />
+            </Grid>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="License" FontWeight="SemiBold" Foreground="#FF2A2F36" Margin="0,0,12,0" />
+                <TextBlock Grid.Column="1" Text="Free and open source — use it, modify it, share it.
+Please keep this credit when you redistribute it."
+                           Foreground="#FF5A616B" TextWrapping="Wrap" />
+            </Grid>
+
+            <Separator Margin="0,14,0,14" />
+
+            <Button Content="OK" Width="86" Height="32" IsDefault="True" Click="Ok_Click" />
+        </StackPanel>
+    </Border>
+</Window>
+

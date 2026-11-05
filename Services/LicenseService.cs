@@ -147,6 +147,14 @@ public sealed class LicenseService : ILicenseService
         }
     }
 
+    public void Unregister()
+    {
+        _key = null;
+        _token = null;
+        _claims = null;
+        Save();
+    }
+
     /// <summary>Activates <paramref name="key"/> for this machine and stores the returned token.</summary>
     public async Task<LicenseResult> ActivateAsync(string key)
     {

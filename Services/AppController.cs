@@ -20,6 +20,8 @@ public sealed class AppController
     private readonly TrayIconService _tray;
     private readonly UpdateService _updates;
     private readonly Dispatcher _dispatcher;
+    private readonly LicenseDialogService _dialogs;
+    private readonly LicenseWatcher _watcher;
 
     private bool _started;
     private bool _exiting;
@@ -33,7 +35,9 @@ public sealed class AppController
         TaskbarWindow window,
         TrayIconService tray,
         UpdateService updates,
-        Dispatcher dispatcher)
+        Dispatcher dispatcher,
+        LicenseDialogService dialogs,
+        LicenseWatcher watcher)
     {
         _settings = settings;
         _sampler = sampler;
@@ -43,6 +47,8 @@ public sealed class AppController
         _tray = tray;
         _updates = updates;
         _dispatcher = dispatcher;
+        _dialogs = dialogs;
+        _watcher = watcher;
     }
 
     /// <summary>Starts sampling and shows the overlay. Must be called on the UI thread.</summary>
@@ -51,6 +57,12 @@ public sealed class AppController
         if (_started) return;
         _started = true;
 
+        // Start license watcher after confirming license is valid
+        if (_watcher != null)
+        {
+            _watcher.Revoked += OnRevoked;
+        }
+
         _sampler.Sampled += OnSampled;
         _sampler.Start();
 
@@ -58,6 +70,17 @@ public sealed class AppController
         _tray.SetText(_viewModel.TrayText);
 
         if (_settings.AutoUpdate) _ = Task.Run(() => RunUpdateCheckAsync(automatic: true));
+    }
+
+    private void OnRevoked(object? sender, LicenseResult result)
+    {
+        // Show activation dialog again when the periodic check confirms revocation.
+        bool reactivated = _dialogs.ShowActivation(result.Error);
+        if (!reactivated)
+        {
+            // User cancelled or failed to reactivate — shut down cleanly.
+            Exit();
+        }
     }
 
     /// <summary>Opens the shared settings menu at the current cursor position.</summary>
@@ -81,6 +104,8 @@ public sealed class AppController
     {
         if (_exiting) return;
         _exiting = true;
+
+        _watcher?.Dispose();
 
         _settings.Save();
         _window.Close();

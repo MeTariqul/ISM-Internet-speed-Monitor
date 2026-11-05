@@ -18,11 +18,11 @@ double-click it, or install it properly in one click from the menu (see
 
 ## Download
 
-**⬇ [Download ISM-Internet-Speed-Monitor-win-x64.zip](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.2/ISM-Internet-Speed-Monitor-win-x64.zip)** (71 MB) — unzip it, then double-click the exe inside.
+**⬇ [Download ISM-Internet-Speed-Monitor-win-x64.zip](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.6.0/ISM-Internet-Speed-Monitor-win-x64.zip)** (71 MB) — unzip it, then double-click the exe inside.
 
-Prefer the raw executable? **[ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.2/ISM-Internet-Speed-Monitor.exe)** — same build, no unzip step.
+Prefer the raw executable? **[ISM-Internet-Speed-Monitor.exe](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.6.0/ISM-Internet-Speed-Monitor.exe)** — same build, no unzip step.
 
-Checksums: **[SHA256SUMS.txt](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.5.2/SHA256SUMS.txt)**
+Checksums: **[SHA256SUMS.txt](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases/download/v1.6.0/SHA256SUMS.txt)**
 
 Or grab anything from the [Releases](https://github.com/MeTariqul/ISM-Internet-speed-Monitor/releases)
 page, then double-click it — nothing else to install. The .NET runtime and every
@@ -54,6 +54,13 @@ Get-FileHash .\ISM-Internet-Speed-Monitor.exe -Algorithm SHA256
 Compare the output with `SHA256SUMS.txt`. If it matches, the bytes are exactly the
 ones CI built from this repository.
 
+
+## What's new in 1.6.0
+
+- **Thank-you message in License window** — when a user is already registered / licensed, the activation dialog shows a thankful note thanking them for registering.
+- **Periodic license verification** — the app verifies the license with the server every minute while running. A definite revocation (suspended, expired, revoked, device removed) instantly shows the activation dialog again.
+- **Nicer About / Credits page** — replaced the old MessageBox with a clean, branded About window.
+- **Build v1.6.0** — rebuilt as self-contained single-file .NET 8 release.
 
 ## What's new in 1.5.2
 

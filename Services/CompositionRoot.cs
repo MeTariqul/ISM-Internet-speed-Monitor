@@ -17,6 +17,7 @@ public static class CompositionRoot
         services.AddSingleton(_ => AppSettings.Load());
         services.AddSingleton<ILicenseService, LicenseService>();
         services.AddSingleton<LicenseDialogService>();
+        services.AddSingleton<LicenseWatcher>();
         services.AddSingleton(_ => new UpdateService());
 
         services.AddSingleton(sp => new MetricsSampler(sp.GetRequiredService<AppSettings>().Adapter));

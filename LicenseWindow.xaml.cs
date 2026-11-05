@@ -17,6 +17,7 @@ public partial class LicenseWindow : Window
     private bool _busy;
     private bool _closed;
     private bool _statusIsError;
+    private bool _licensed;
     private string _activateLabel = "Activate";
 
     public LicenseWindow(ILicenseService license, string? message = null)
@@ -29,15 +30,33 @@ public partial class LicenseWindow : Window
         LicenseResult offline = license.ValidateOffline();
         if (offline.Ok && offline.Claims is not null)
         {
-            IntroText.Text = "This PC is licensed. Replace the key below if you have a new one.";
-            _activateLabel = "Save key";
+            IntroText.Visibility = Visibility.Collapsed;
+            KeyLabel.Visibility = Visibility.Collapsed;
+            KeyBox.Visibility = Visibility.Collapsed;
+            RequestSection.Visibility = Visibility.Collapsed;
+            _licensed = true;
+            _activateLabel = "Unregister";
             ActivateButton.Content = _activateLabel;
             QuitButton.Content = "Close";
+            ShowThanks(true);
             SetStatus(Describe(offline.Claims), error: false);
         }
         else if (!string.IsNullOrWhiteSpace(message))
         {
+            IntroText.Visibility = Visibility.Visible;
+            KeyLabel.Visibility = Visibility.Visible;
+            KeyBox.Visibility = Visibility.Visible;
+            RequestSection.Visibility = Visibility.Visible;
+            ShowThanks(false);
             SetStatus(message!, error: true);
+        }
+        else
+        {
+            IntroText.Visibility = Visibility.Visible;
+            KeyLabel.Visibility = Visibility.Visible;
+            KeyBox.Visibility = Visibility.Visible;
+            RequestSection.Visibility = Visibility.Visible;
+            ShowThanks(false);
         }
 
         Loaded += (_, _) =>
@@ -59,6 +78,24 @@ public partial class LicenseWindow : Window
     private async void Activate_Click(object sender, RoutedEventArgs e)
     {
         if (_busy) return;
+
+        if (_licensed)
+        {
+            _license.Unregister();
+            _licensed = false;
+
+            IntroText.Visibility = Visibility.Visible;
+            KeyLabel.Visibility = Visibility.Visible;
+            KeyBox.Visibility = Visibility.Visible;
+            RequestSection.Visibility = Visibility.Visible;
+            KeyBox.Text = string.Empty;
+            _activateLabel = "Activate";
+            ActivateButton.Content = _activateLabel;
+            QuitButton.Content = "Quit";
+            ShowThanks(false);
+            SetStatus("License removed from this PC.", error: false);
+            return;
+        }
 
         string key = KeyBox.Text.Trim();
         if (key.Length == 0)
@@ -181,6 +218,15 @@ public partial class LicenseWindow : Window
         StatusText.Text = text;
         StatusText.Foreground = error ? ErrorBrush : InfoBrush;
         StatusText.Visibility = text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private void ShowThanks(bool show)
+    {
+        ThanksText.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        if (show)
+        {
+            ThanksText.Text = "Thank you for registering ISM Internet Speed Monitor! Your license is active on this PC. Everything works offline; the license only checks in with the server when its re-check time arrives.";
+        }
     }
 
     private static string Describe(LicenseClaims claims)
